@@ -3,7 +3,7 @@
 #include <queue>
 
 
-namespace esl {
+namespace sel {
 
 	// https://stackoverflow.com/questions/4484767/how-to-iterate-over-a-priority-queue
 	template <class T, class S, class C>

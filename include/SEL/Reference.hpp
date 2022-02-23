@@ -3,7 +3,7 @@
 #include <memory>
 
 
-namespace esl {
+namespace sel {
 	
 	template <typename T>
 	using Scope = std::unique_ptr<T>;
