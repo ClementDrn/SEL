@@ -1,2 +1,1 @@
-# ESL
-C++ essentials
+# Simple but Essential Library
