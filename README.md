@@ -1,1 +1,1 @@
-# Simple but Essential Library
+# Simple but Essential Library (SEL)
