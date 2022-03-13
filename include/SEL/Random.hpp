@@ -10,30 +10,30 @@ namespace sel {
 	{
 	public:
 
-		Random()
+		static init()
 		{
 			m_engine.seed(std::random_device()());
 		}
 
-		float decimal()
+		static float decimal()
 		{
 			return static_cast<float>(m_distribution(m_engine)) / static_cast<float>(std::numeric_limits<uint32_t>::max());
 		}
 
-		int integer()
+		static int integer()
 		{
 			return static_cast<int>(m_distribution(m_engine));
 		}
 
-		bool boolean()
+		static bool boolean()
 		{
 			return static_cast<bool>(m_distribution(m_engine) % 2);
 		}
 
 	private:
 
-		std::mt19937 m_engine;
-		std::uniform_int_distribution<std::mt19937::result_type> m_distribution;
+		inline static std::mt19937 m_engine;
+		inline static std::uniform_int_distribution<std::mt19937::result_type> m_distribution;
 	};
 
 }
