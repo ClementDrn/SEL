@@ -43,7 +43,10 @@ namespace sel {
 	}
 
 	template <class T>
-	inline bool operator!=(const Vec2<T>& lhs, const Vec2<T>& rhs) { return !(lhs == rhs); }
+	inline bool operator!=(const Vec2<T>& lhs, const Vec2<T>& rhs) 
+	{ 
+		return !(lhs == rhs); 
+	}
 
 
 	template <class T>
