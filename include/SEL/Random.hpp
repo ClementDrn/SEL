@@ -10,7 +10,7 @@ namespace sel {
 	{
 	public:
 
-		static init()
+		static void init()
 		{
 			m_engine.seed(std::random_device()());
 		}
