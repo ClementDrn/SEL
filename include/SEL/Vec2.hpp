@@ -11,6 +11,8 @@ namespace sel {
 		T x = 0;
 		T y = 0;
 
+		Vec2() = default;
+
 		Vec2(T x, T y)
 			: x(x), y(y) {}
 

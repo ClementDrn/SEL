@@ -10,27 +10,29 @@ namespace sel {
 
 		union
 		{
-			T x;
+			T x = 0;
 			T r;
-		} = 0;
+		};
 
 		union
 		{
-			T y;
+			T y = 0;
 			T g;
-		} = 0;
+		};
 
 		union
 		{
-			T z;
+			T z = 0;
 			T b;
-		} = 0;
+		};
 
 		union
 		{
-			T w;
+			T w = 0;
 			T a;
-		} = 0;
+		};
+
+		Vec4() = default;
 
 		Vec4(T x, T y, T z, T w)
 			: x(x), y(y), z(z), w(w) {}
