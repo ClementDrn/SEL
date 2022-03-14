@@ -10,21 +10,23 @@ namespace sel {
 
 		union
 		{
-			T x;
+			T x = 0;
 			T r;
-		} = 0;
+		};
 
 		union
 		{
-			T y;
+			T y = 0;
 			T g;
-		} = 0;
+		};
 
 		union
 		{
-			T z;
+			T z = 0;
 			T b;
-		} = 0;
+		};
+
+		Vec3() = default;
 
 		Vec3(T x, T y, T z)
 			: x(x), y(y), z(z) {}
