@@ -1,6 +1,6 @@
 #pragma once
 
-#include "NonCopyable.hpp"
+#include "SEL/Utilities/NonCopyable.hpp"
 
 #include "SEL/Threads/ThreadCore.hpp"
 #include "SEL/Threads/Thread.hpp"
