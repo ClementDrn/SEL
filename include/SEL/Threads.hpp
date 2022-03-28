@@ -1,16 +1,5 @@
 #pragma once
 
-#include <mutex>
-#include <shared_mutex>
-#include <thread>
-
-
-namespace sel {
-
-	using Mutex = std::shared_mutex;
-
-	using ReadLock = std::shared_lock<Mutex>;
-
-	using WriteLock = std::unique_lock<Mutex>;
-
-}
+#include "SEL/Threads/ThreadCore.hpp"
+#include "SEL/Threads/Thread.hpp"
+#include "SEL/Threads/LoopThread.hpp"
