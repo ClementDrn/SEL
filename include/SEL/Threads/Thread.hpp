@@ -7,71 +7,70 @@
 
 namespace sel {
 
-	/// <summary>
-	/// Represents a thread of execution and can assign tasks to it.
-	/// </summary>
+	/// @brief Represents a thread of execution and can assign tasks to it.
+	///
 	class Thread : public NonCopyable
 	{
 	public:
 
-		/// <summary>
-		/// Specifies the possible states of the thread.
-		/// </summary>
+		/// @brief Specifies the possible states of the thread.
+		///
 		enum class State
 		{
-			None	= 0b0000,		// The instance has been created but no task is assigned to a thread. In fact no thread is used by the instance.
-			Running = 0b0001,		// The thread is running the assigned task.
-			Joined	= 0b1000,		// The thread has finished its execution and joined another thread.
+			None	= 0b0000,		///< The instance has been created but no task is assigned to a thread. In fact no thread is used by the instance.
+			Running = 0b0001,		///< The thread is running the assigned task.
+			Joined	= 0b1000,		///< The thread has finished its execution and joined another thread.
 		};
 
 
-		/// <summary>
-		/// Default constructor. No task will be assigned to a thread.
-		/// </summary>
+		/// @brief Default constructor. No task will be assigned to a thread.
+		/// 
 		Thread()
 			: m_state(State::None) {}
 
-		/// <summary>
-		/// Move constructor.
-		/// </summary>
-		/// <param name="other">The Thread object being moved.</param>
-		/// <returns>The newly constructed Thread object.</returns>
+		/// @brief Move constructor.
+		/// 
+		/// @param other is the Thread object being moved.
+		/// 
+		/// @return The newly constructed Thread object.
+		/// 
 		Thread(Thread&& other) noexcept
 			: m_thread(std::move(other.m_thread)), m_state(other.m_state)
 		{
 			other.m_state = State::None;
 		}
-
-		/// <summary>
-		/// Constructor that assigns a task to the thread represented by the constructed instance.
-		/// </summary>
-		/// <typeparam name="Fn">A callable type.</typeparam>
-		/// <typeparam name="...Args">The argument types.</typeparam>
-		/// <param name="function">The callable object.</param>
-		/// <param name="...args">The arguments that are needed to call the object.</param>
+		
+		/// @brief Constructor that assigns a task to the thread represented by the constructed instance.
+		/// 
+		/// @tparam Fn is a callable type.
+		/// @tparam ...Args are the argument types.
+		/// @param function is the callable object.
+		/// @param ...args The arguments that are needed to call the object.
+		/// 
 		template <class Fn, class ...Args>
 		Thread(Fn&& function, Args&&... args)
 			: m_thread(function, args...), m_state(State::Running) {}
 
-		/// <summary>
-		/// Destructor that will call join() before deleting the instance.
-		/// </summary>
+		/// @brief Destructor that will call join() before deleting the instance.
+		///
 		~Thread()
 		{
 			join();
 		}
 
 
-		/// <summary>
-		/// Assigns a task to a thread and makes the instance represent this thread. 
+		/// @brief Assigns a task to a thread and makes the instance represent this thread. 
+		/// 
 		/// The method returns true if the task could be assigned. 
 		/// If false is returned, make sure you have joined the thread to its parent one beforehand.
-		/// </summary>
-		/// <typeparam name="Fn">A callable type.</typeparam>
-		/// <typeparam name="...Args">The argument types.</typeparam>
-		/// <param name="function">The callable object.</param>
-		/// <param name="...args">The arguments that are needed to call the object.</param>
-		/// <returns>The value indicating if the task could be assigned to the thread.</returns>
+		/// 
+		/// @tparam Fn is a callable type
+		/// @tparam ...Args are the argument types.
+		/// @param function is the callable object.
+		/// @param ...args The arguments that are needed to call the object.
+		/// 
+		/// @return The value indicating if the task could be assigned to the thread.
+		/// 
 		template <class Fn, class ...Args>
 		bool run(Fn&& function, Args&&... args)
 		{
@@ -83,11 +82,12 @@ namespace sel {
 			return true;
 		}
 
-		/// <summary>
-		/// Waits for the thread to finish its execution.
+		/// @brief Waits for the thread to finish its execution.
+		/// 
 		/// If the thread is not joinable or if it is trying to join itself, false will be returned.
-		/// </summary>
-		/// <returns>The value indicating if the method could wait for the thread to finish its execution.</returns>
+		/// 
+		/// @return The value indicating if the method could wait for the thread to finish its execution.
+		/// 
 		bool join()
 		{
 			if (m_thread.joinable() && std::this_thread::get_id() != m_thread.get_id())
@@ -102,14 +102,15 @@ namespace sel {
 		}
 
 
-		/// <returns>The thread's state.</returns>
+		/// @return The thread's state.
+		///
 		State getState() const { return m_state; }
 
 
-		/// <summary>
-		/// Swaps two Thread objects.
-		/// </summary>
-		/// <param name="other">The other Thread object being swapped.</param>
+		/// @brief Swaps two Thread objects.
+		/// 
+		/// @param other is the other Thread object being swapped.
+		/// 
 		void swap(Thread& other)
 		{
 			if (this != &other)
@@ -122,11 +123,12 @@ namespace sel {
 			}
 		}
 
-		/// <summary>
-		/// Move assignment operator.
-		/// </summary>
-		/// <param name="other">The Thread object being moved.</param>
-		/// <returns>The newly constructed Thread object.</returns>
+		/// @brief Move assignment operator.
+		/// 
+		/// @param other is the Thread object being moved.
+		/// 
+		/// @return The newly constructed Thread object.
+		/// 
 		Thread& operator=(Thread&& other) noexcept
 		{
 			if (this != &other)

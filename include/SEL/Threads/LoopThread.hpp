@@ -10,60 +10,58 @@
 
 namespace sel {
 
-	/// <summary>
-	/// Represents and controls a thread of execution that will repeat a task.
-	/// </summary>
+	/// @brief Represents and controls a thread of execution that will repeat a task.
+	/// 
 	class LoopThread : public NonCopyable
 	{
 	public:
 
-		/// <summary>
-		/// Specifies the possible states of the thread.
-		/// </summary>
+		/// @brief Specifies the possible states of the thread.
+		///
 		enum class State
 		{
-			None = 0b0000,			// The instance has been created but no task is assigned to a thread. In fact no thread is used by the instance.
-			Running = 0b0001,		// The thread is running the assigned task.
-			Paused = 0b0010,		// The thread is still being used but no longer runs the task.
-			Stopped = 0b0100,		// The thread has finished to loop but has not joined any other thread yet.
-			Joined = 0b1000,		// The thread has finished its execution and joined another thread.
+			None	= 0b0000,		///< The instance has been created but no task is assigned to a thread. In fact no thread is used by the instance.
+			Running = 0b0001,		///< The thread is running the assigned task.
+			Paused	= 0b0010,		///< The thread is still being used but no longer runs the task.
+			Stopped = 0b0100,		///< The thread has finished to loop but has not joined any other thread yet.
+			Joined	= 0b1000,		///< The thread has finished its execution and joined another thread.
 		};
 
 
-		/// <summary>
-		/// Default constructor. No task will be assigned to a thread.
-		/// </summary>
+		/// @brief Default constructor. No task will be assigned to a thread.
+		/// 
 		LoopThread()
 		{
 			init();
 		}
-
-		/// <summary>
-		/// Move constructor.
-		/// </summary>
-		/// <param name="other">The LoopThread object being moved.</param>
-		/// <returns>The newly constructed LoopThread object.</returns>
+		
+		/// @brief Move constructor.
+		/// 
+		/// @param other is the LoopThread object being moved.
+		/// 
+		/// @return The newly constructed LoopThread object.
+		/// 
 		LoopThread(LoopThread&& other) noexcept
 		{
 			move(other);
 		}
 
-		/// <summary>
-		/// Constructor that assigns a function as the task for its future thread.
-		/// </summary>
-		/// <param name="function">The task that will be repeated by the thread.</param>
+		/// @brief Constructor that assigns a function as the task for its future thread.
+		/// 
+		/// @param function is the task that will be repeated by the thread.
+		/// 
 		LoopThread(std::function<void()> function)
 			: m_onLoop(function)
 		{
 			init();
 		}
-
-		/// <summary>
-		/// Constructor that assigns a method as the task for its future thread.
-		/// </summary>
-		/// <typeparam name="C">The class that owns the method.</typeparam>
-		/// <param name="method">The task that will be repeated by the thread.</param>
-		/// <param name="object">The object needed to call the method.</param>
+		
+		/// @brief Constructor that assigns a method as the task for its future thread.
+		/// 
+		/// @tparam C is the class that owns the method.
+		/// @param method is the task that will be repeated by the thread.
+		/// @param object is the object needed to call the method.
+		/// 
 		template <class C>
 		LoopThread(void(C::* method)(), C* object)
 			: m_onLoop(std::bind(method, object))
@@ -71,22 +69,23 @@ namespace sel {
 			init();
 		}
 
-		/// <summary>
-		/// Destructor that will call stop() and join() before deleting the instance.
-		/// </summary>
+		/// @brief Destructor that will call stop() and join() before deleting the instance.
+		///
 		~LoopThread()
 		{
 			join();
 		}
 
-
-		/// <summary>
-		/// Assigns a function as the task for its future thread.
+		
+		/// @brief Assigns a function as the task for its future thread.
+		/// 
 		/// The method returns true if the task could be assigned. 
 		/// If false is returned, make sure the thread was not running.
-		/// </summary>
-		/// <param name="function">The task that will be repeated by the thread.</param>
-		/// <returns>The value indicating if the task could be assigned to the thread.</returns>
+		/// 
+		/// @param function is the task that will be repeated by the thread.
+		/// 
+		/// @return The value indicating if the task could be assigned to the thread.
+		/// 
 		bool setOnLoopFunc(std::function<void()> function)
 		{
 			if (getState() == State::Running)
@@ -97,16 +96,18 @@ namespace sel {
 			m_onLoop = function;
 			return true;
 		}
-
-		/// <summary>
-		/// Assigns a method as the task for its future thread.
+		
+		/// @brief Assigns a method as the task for its future thread.
+		/// 
 		/// The method returns true if the task could be assigned. 
 		/// If false is returned, make sure the thread was not running.	
-		/// </summary>
-		/// <typeparam name="C">The class that owns the method.</typeparam>
-		/// <param name="method">The task that will be repeated by the thread.</param>
-		/// <param name="object">The object needed to call the method.</param>
-		/// <returns>The value indicating if the task could be assigned to the thread.</returns>
+		/// 
+		/// @tparam C is the class that owns the method.
+		/// @param method is the task that will be repeated by the thread.
+		/// @param object is the object needed to call the method.
+		/// 
+		/// @return The value indicating if the task could be assigned to the thread.
+		/// 
 		template <class C>
 		bool setOnLoopFunc(void(C::* method)(), C* object)
 		{
@@ -114,9 +115,8 @@ namespace sel {
 		}
 
 
-		/// <summary>
-		/// Creates a thread of execution and asks it to start repeating the task. 
-		/// </summary>
+		/// @brief Creates a thread of execution and asks it to start repeating the task. 
+		/// 
 		void start()
 		{
 			WriteLock write(m_mutex);
@@ -127,10 +127,10 @@ namespace sel {
 			startThread();
 		}
 
-		/// <summary>
-		/// Asks and waits for the thread to stop repeating the task but does not terminate.
+		/// @brief Asks and waits for the thread to stop repeating the task but does not terminate.
+		/// 
 		/// Once this method has been called, the thread will be in a pause state.
-		/// </summary>
+		/// 
 		void pause()
 		{
 			ReadLock read(m_mutex);
@@ -148,31 +148,31 @@ namespace sel {
 			}
 		}
 
-		/// <summary>
-		/// Asks the thread to start repeating the task again if it was in a pause state.
-		/// </summary>
+		/// @brief Asks the thread to start repeating the task again if it was in a pause state.
+		/// 
 		void resume()
 		{
 			WriteLock write(m_mutex);
 			resumeScript();
 		}
 
-		/// <summary>
-		/// Asks the thread to stop repeating the task. 
-		/// </summary>
+		/// @brief Asks the thread to stop repeating the task. 
+		/// 
 		void stop()
 		{
 			WriteLock write(m_mutex);
 			stopScript();
 		}
 
-		/// <summary>
-		/// Waits for the thread to finish its execution.
+		/// @brief Waits for the thread to finish its execution.
+		/// 
 		/// If the thread is not joinable or if it is trying to join itself, false will be returned.
 		/// If the withStop parameter is set to false, the method will not call stop() before trying to join the threads.
-		/// </summary>
-		/// <param name="withStop">The value indicating if the method should stop the loop before trying to join.</param>
-		/// <returns>The value indicating if the method could wait for the thread to finish its execution.</returns>	
+		/// 
+		/// @param withStop is the value indicating if the method should stop the loop before trying to join.
+		/// 
+		/// @return The value indicating if the method could wait for the thread to finish its execution.
+		/// 
 		bool join(bool withStop = true)
 		{
 			if (withStop)
@@ -187,7 +187,8 @@ namespace sel {
 		}
 
 
-		/// <returns>The thread's state.</returns>
+		/// @return The thread's state.
+		///
 		State getState() const
 		{
 			ReadLock read(m_mutex);
@@ -196,10 +197,10 @@ namespace sel {
 		}
 
 
-		/// <summary>
-		/// Swaps two LoopThread objects.
-		/// </summary>
-		/// <param name="other">The other LoopThread object being swapped.</param>
+		/// @brief Swaps two LoopThread objects.
+		/// 
+		/// @param is the other LoopThread object being swapped.
+		/// 
 		void swap(LoopThread& other)
 		{
 			if (this != &other)
@@ -235,12 +236,12 @@ namespace sel {
 			}
 		}
 
-
-		/// <summary>
-		/// Move assignment operator.
-		/// </summary>
-		/// <param name="other">The LoopThread object being moved.</param>
-		/// <returns>The newly constructed LoopThread object.</returns>
+		/// @brief Move assignment operator.
+		/// 
+		/// @param other is the LoopThread object being moved.
+		/// 
+		/// @return The newly constructed LoopThread object.
+		/// 
 		LoopThread& operator=(LoopThread&& other) noexcept
 		{
 			if (this != &other)

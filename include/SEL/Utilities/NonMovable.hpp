@@ -4,6 +4,7 @@
 namespace sel {
 
 	/// @brief Subclasses of this class won't be able to be moved by default.
+	///
 	class NonMovable
 	{
 	public:

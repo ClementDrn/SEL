@@ -4,6 +4,7 @@
 namespace sel {
 
 	/// @brief Subclasses of this class won't be able to be copied by default.
+	///
 	class NonCopyable
 	{
 	public:
