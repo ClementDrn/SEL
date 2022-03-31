@@ -4,3 +4,6 @@
 # Doxygen documentation 
 html/*
 latex/*
+
+# Packages
+*.zip
