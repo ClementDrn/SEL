@@ -19,6 +19,13 @@ namespace sel {
 		Mat2x2() = default;
 
 		/// @brief Constructor.
+		/// 
+		/// @param scalar is the value to set to the diagonal to.
+		/// 
+		Mat2x2(T scalar)
+			: m_data{ { scalar, 0 }, { 0, scalar } } {}
+
+		/// @brief Constructor.
 		///
 		/// This constructor sets matrix's values to the given ones.
 		/// 
@@ -28,10 +35,20 @@ namespace sel {
 		/// @param m11 is the value of the second row, second column.
 		/// 
 		Mat2x2(T m00, T m01, T m10, T m11)
-			: m_data{ m00, m01, m10, m11 }
-		{}
+			: m_data{ m00, m01, m10, m11 } {}
 
+		/// @brief Copy constructor.
+		///
+		/// This constructor copies the input matrix.
+		/// 
+		/// @param other is the matrix to copy.
+		/// 
+		Mat2x2(const Mat2x2& other)
+			: m_data{ other[0][0], other[0][1], other[1][0], other[1][1] } {}
 		
+			
+		/// @return the identity matrix.
+		/// 
 		static Mat2x2<T> identity()
 		{
 			return Mat2x2<T>(

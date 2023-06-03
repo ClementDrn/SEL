@@ -18,6 +18,51 @@ namespace sel {
 		/// 
 		Mat3x3() = default;
 
+		/// @brief Constructor.
+		/// 
+		/// @param scalar is the value to set to the diagonal to.
+		/// 
+		Mat3x3(T scalar)
+			: m_data{ { scalar, 0, 0 }, { 0, scalar, 0 }, { 0, 0, scalar } } {}
+
+		/// @brief Constructor.
+		///
+		/// This constructor sets matrix's values to the given ones.
+		/// 
+		/// @param m00 is the value of the first row, first column.
+		/// @param m01 is the value of the first row, second column.
+		/// @param m10 is the value of the second row, first column.
+		/// @param m11 is the value of the second row, second column.
+		/// @param m20 is the value of the third row, first column.
+		/// @param m21 is the value of the third row, second column.
+		/// @param m30 is the value of the fourth row, first column.
+		/// @param m31 is the value of the fourth row, second column.
+		/// @param m32 is the value of the fourth row, third column.
+		/// 
+		Mat3x3(T m00, T m01, T m02, T m10, T m11, T m12, T m20, T m21, T m22)
+			: m_data{ m00, m01, m02, m10, m11, m12, m20, m21, m22 } {}
+
+		/// @brief Copy constructor.
+		///
+		/// This constructor copies the input matrix.
+		/// 
+		/// @param other is the matrix to copy.
+		/// 
+		Mat3x3(const Mat3x3& other)
+			: m_data{ other[0][0], other[0][1], other[0][2], other[1][0], other[1][1], other[1][2], other[2][0], other[2][1], other[2][2] } {}
+
+
+		/// @return the identity matrix.
+		/// 
+		static Mat3x3<T> identity()
+		{
+			return Mat3x3<T>(
+				1, 0, 0,
+				0, 1, 0,
+				0, 0, 1
+			);
+		}
+
 
 		/// @brief Access specified matrix column.
 		/// 
