@@ -5,3 +5,4 @@
 #include "SEL/Utilities/NonCopyable.hpp"
 #include "SEL/Utilities/NonMovable.hpp"
 #include "SEL/Utilities/Reference.hpp"
+#include "SEL/Utilities/Timer.hpp"
