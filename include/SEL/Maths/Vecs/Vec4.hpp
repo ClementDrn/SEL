@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cmath>
+
 
 namespace sel {
 
@@ -163,4 +165,17 @@ namespace sel {
 		return lhs;
 	}
 
+	/// @brief Calculates the normalized version of a given vector.
+	///
+	/// @tparam T is the type of the vector's coordinates.
+	/// @param vec is the vector to be normalized.
+	///
+	/// @return The normalized version of the input vector.
+	/// 
+	template <class T>
+	Vec4<T> normalize(const Vec4<T>& vec)
+	{
+		T length = std::sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z + vec.w * vec.w);
+		return { vec.x / length, vec.y / length, vec.z / length, vec.w / length };
+	}
 }
