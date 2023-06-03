@@ -18,6 +18,28 @@ namespace sel {
 		/// 
 		Mat2x2() = default;
 
+		/// @brief Constructor.
+		///
+		/// This constructor sets matrix's values to the given ones.
+		/// 
+		/// @param m00 is the value of the first row, first column.
+		/// @param m01 is the value of the first row, second column.
+		/// @param m10 is the value of the second row, first column.
+		/// @param m11 is the value of the second row, second column.
+		/// 
+		Mat2x2(T m00, T m01, T m10, T m11)
+			: m_data{ m00, m01, m10, m11 }
+		{}
+
+		
+		static Mat2x2<T> identity()
+		{
+			return Mat2x2<T>(
+				1, 0,
+				0, 1
+			);
+		}
+
 
 		/// @brief Access specified matrix column.
 		/// 
