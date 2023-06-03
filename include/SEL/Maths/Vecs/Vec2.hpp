@@ -61,6 +61,66 @@ namespace sel {
 			return *this;
 		}
 
+		/// @brief Overload of *= binary arithmetic operator.
+		///
+		/// The instance's coordinates are multiplied by the provided scalar.
+		/// 
+		/// @param rhs is the value by which the coordinates must be multiplied.
+		/// 
+		/// @return The reference to the updated vector.
+		///
+		Vec2& operator*=(float rhs)
+		{
+			x *= rhs;
+			y *= rhs;
+			return *this;
+		}
+
+		/// @brief Overload of /= binary arithmetic operator.
+		///
+		/// The instance's coordinates are divided by the provided scalar.
+		/// 
+		/// @param rhs is the value by which the coordinates must be divided.
+		/// 
+		/// @return The reference to the updated vector.
+		/// 
+		Vec2& operator/=(float rhs)
+		{
+			x /= rhs;
+			y /= rhs;
+			return *this;
+		}
+		
+		/// @brief Overlaod of *= binary arithmetic operator.
+		/// 
+		/// The instance's coordinates are multiplied by the other vector's coordinates.
+		/// 
+		/// @param rhs is the vector in which the coordinates must be multiplied by the instance's coordinates.
+		/// 
+		/// @return The reference to the updated vector.
+		/// 
+		Vec2& operator*=(const Vec2& rhs)
+		{
+			x *= rhs.x;
+			y *= rhs.y;
+			return *this;
+		}
+
+		/// @brief Overload of /= binary arithmetic operator.
+		///
+		/// The instance's coordinates are divided by the other vector's coordinates.
+		/// 
+		/// @param rhs is the vector in which the coordinates must be divided by the instance's coordinates.
+		/// 
+		/// @return The reference to the updated vector.
+		/// 
+		Vec2& operator/=(const Vec2& rhs)
+		{
+			x /= rhs.x;
+			y /= rhs.y;
+			return *this;
+		}
+
 	};
 
 	/// @brief Data structure that describes a vector with 2 integer coordinates.
@@ -117,10 +177,9 @@ namespace sel {
 	/// @return The vector resulted by the addition of the two provided vectors.
 	/// 
 	template <class T>
-	inline Vec2<T> operator+(Vec2<T> lhs, const Vec2<T>& rhs)
+	inline Vec2<T> operator+(const Vec2<T>& lhs, const Vec2<T>& rhs)
 	{
-		lhs += rhs;
-		return lhs;
+		return { lhs.x + rhs.x, lhs.y + rhs.y };
 	}
 
 	/// @brief Overload of - binary arithmetic operator.
@@ -132,10 +191,79 @@ namespace sel {
 	/// @return The vector resulted by the difference between the two provided vectors.
 	/// 
 	template <class T>
-	inline Vec2<T> operator-(Vec2<T> lhs, const Vec2<T>& rhs)
+	inline Vec2<T> operator-(const Vec2<T>& lhs, const Vec2<T>& rhs)
 	{
-		lhs -= rhs;
-		return lhs;
+		return { lhs.x - rhs.x, lhs.y - rhs.y };
+	}
+
+	/// @brief Overload of * binary arithmetic operator.
+	///
+	/// @tparam T is the type of the vector's coordinates.
+	/// @param lhs is the vector.
+	/// @param rhs is the scalar.
+	/// 
+	/// @return The vector resulted by the multiplication of the vector by the scalar.
+	/// 
+	template <class T>
+	inline Vec2<T> operator*(const Vec2<T>& lhs, float rhs)
+	{
+		return { lhs.x * rhs, lhs.y * rhs };
+	}
+
+	/// @brief Overload of * binary arithmetic operator.
+	///
+	/// @tparam T is the type of the vector's coordinates.
+	/// @param lhs is the scalar.
+	/// @param rhs is the vector.
+	/// 
+	/// @return The vector resulted by the multiplication of the vector by the scalar.
+	/// 
+	template <class T>
+	inline Vec2<T> operator*(float lhs, const Vec2<T>& rhs)
+	{
+		return { lhs * rhs.x, lhs * rhs.y };
+	}
+
+	/// @brief Overload of * binary arithmetic operator.
+	///
+	/// @tparam T is the type of the vectors' coordinates.
+	/// @param lhs is the first vector.
+	/// @param rhs is the second vector.
+	/// 
+	/// @return The vector resulted by the multiplication of the two provided vectors.
+	/// 
+	template <class T>
+	inline Vec2<T> operator*(const Vec2<T>& lhs, const Vec2<T>& rhs)
+	{
+		return { lhs.x * rhs.x, lhs.y * rhs.y };
+	}
+	
+	/// @brief Overload of / binary arithmetic operator.
+	///
+	/// @tparam T is the type of the vectors' coordinates.
+	/// @param lhs is the first vector.
+	/// @param rhs is the second vector.
+	/// 
+	/// @return The vector resulted by the division of the two provided vectors.
+	/// 
+	template <class T>
+	inline Vec2<T> operator/(const Vec2<T>& lhs, const Vec2<T>& rhs)
+	{
+		return { lhs.x / rhs.x, lhs.y / rhs.y };
+	}
+
+	/// @brief Function that returns the dot product of two vectors.
+	/// 
+	/// @tparam T is the type of the vectors' coordinates.
+	/// @param u is the first vector.
+	/// @param v is the second vector.
+	/// 
+	/// @return The dot product of the two provided vectors.
+	/// 
+	template <class T>
+	float dot(const Vec2<T>& u, const Vec2<T>& v)
+	{
+		return u.x * v.x + u.y * v.y;
 	}
 
 	/// @brief Calculates the normalized version of a given vector.

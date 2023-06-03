@@ -79,6 +79,70 @@ namespace sel {
 			return *this;
 		}
 
+		/// @brief Overload of *= binary arithmetic operator.
+		///
+		/// The instance's coordinates are multiplied by the provided scalar.
+		/// 
+		/// @param rhs is the value by which the coordinates must be multiplied.
+		/// 
+		/// @return The reference to the updated vector.
+		///
+		Vec3& operator*=(float rhs)
+		{
+			x *= rhs;
+			y *= rhs;
+			z *= rhs;
+			return *this;
+		}
+
+		/// @brief Overload of /= binary arithmetic operator.
+		///
+		/// The instance's coordinates are divided by the provided scalar.
+		/// 
+		/// @param rhs is the value by which the coordinates must be divided.
+		/// 
+		/// @return The reference to the updated vector.
+		/// 
+		Vec3& operator/=(float rhs)
+		{
+			x /= rhs;
+			y /= rhs;
+			z /= rhs;
+			return *this;
+		}
+
+		/// @brief Overlaod of *= binary arithmetic operator.
+		/// 
+		/// The instance's coordinates are multiplied by the other vector's coordinates.
+		/// 
+		/// @param rhs is the vector in which the coordinates must be multiplied by the instance's coordinates.
+		/// 
+		/// @return The reference to the updated vector.
+		/// 
+		Vec3& operator*=(const Vec3& rhs)
+		{
+			x *= rhs.x;
+			y *= rhs.y;
+			z *= rhs.z;
+			return *this;
+		}
+
+		/// @brief Overload of /= binary arithmetic operator.
+		///
+		/// The instance's coordinates are divided by the other vector's coordinates.
+		/// 
+		/// @param rhs is the vector in which the coordinates must be divided by the instance's coordinates.
+		/// 
+		/// @return The reference to the updated vector.
+		/// 
+		Vec3& operator/=(const Vec3& rhs)
+		{
+			x /= rhs.x;
+			y /= rhs.y;
+			z /= rhs.z;
+			return *this;
+		}
+
 	};
 
 	/// @brief Data structure that describes a vector with 3 integer coordinates.
@@ -135,10 +199,9 @@ namespace sel {
 	/// @return The vector resulted by the addition of the two provided vectors.
 	/// 
 	template <class T>
-	inline Vec3<T> operator+(Vec3<T> lhs, const Vec3<T>& rhs)
+	inline Vec3<T> operator+(const Vec3<T>& lhs, const Vec3<T>& rhs)
 	{
-		lhs += rhs;
-		return lhs;
+		return { lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z };
 	}
 
 	/// @brief Overload of - binary arithmetic operator.
@@ -150,10 +213,79 @@ namespace sel {
 	/// @return The vector resulted by the difference between the two provided vectors.
 	/// 
 	template <class T>
-	inline Vec3<T> operator-(Vec3<T> lhs, const Vec3<T>& rhs)
+	inline Vec3<T> operator-(const Vec3<T>& lhs, const Vec3<T>& rhs)
 	{
-		lhs -= rhs;
-		return lhs;
+		return { lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z };
+	}
+
+	/// @brief Overload of * binary arithmetic operator.
+	///
+	/// @tparam T is the type of the vector's coordinates.
+	/// @param lhs is the vector.
+	/// @param rhs is the scalar.
+	/// 
+	/// @return The vector resulted by the multiplication of the vector by the scalar.
+	/// 
+	template <class T>
+	inline Vec3<T> operator*(const Vec3<T>& lhs, float rhs)
+	{
+		return { lhs.x * rhs, lhs.y * rhs, lhs.z * rhs };
+	}
+
+	/// @brief Overload of * binary arithmetic operator.
+	///
+	/// @tparam T is the type of the vector's coordinates.
+	/// @param lhs is the scalar.
+	/// @param rhs is the vector.
+	/// 
+	/// @return The vector resulted by the multiplication of the vector by the scalar.
+	/// 
+	template <class T>
+	inline Vec3<T> operator*(float lhs, const Vec3<T>& rhs)
+	{
+		return { lhs * rhs.x, lhs * rhs.y, lhs * rhs.z };
+	}
+
+	/// @brief Overload of * binary arithmetic operator.
+	///
+	/// @tparam T is the type of the vectors' coordinates.
+	/// @param lhs is the first vector.
+	/// @param rhs is the second vector.
+	/// 
+	/// @return The vector resulted by the multiplication of the two provided vectors.
+	/// 
+	template <class T>
+	inline Vec3<T> operator*(const Vec3<T>& lhs, const Vec3<T>& rhs)
+	{
+		return { lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z };
+	}
+
+	/// @brief Overload of / binary arithmetic operator.
+	///
+	/// @tparam T is the type of the vectors' coordinates.
+	/// @param lhs is the first vector.
+	/// @param rhs is the second vector.
+	/// 
+	/// @return The vector resulted by the division of the two provided vectors.
+	/// 
+	template <class T>
+	inline Vec3<T> operator/(const Vec3<T>& lhs, const Vec3<T>& rhs)
+	{
+		return { lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z };
+	}
+	
+	/// @brief Function that returns the dot product of two vectors.
+	/// 
+	/// @tparam T is the type of the vectors' coordinates.
+	/// @param u is the first vector.
+	/// @param v is the second vector.
+	/// 
+	/// @return The dot product of the two provided vectors.
+	/// 
+	template <class T>
+	float dot(const Vec3<T>& u, const Vec3<T>& v)
+	{
+		return u.x * v.x + u.y * v.y + u.z * v.z;
 	}
 
 	/// @brief Calculates the normalized version of a given vector.
