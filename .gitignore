@@ -1,5 +1,17 @@
 # Visual Studio
 .vs
+*.sln
+*.vcxproj*
+
+# Test project generation
+vendor/
+scripts/
+premake5.lua
+
+# Tests
+tests/
+bin/
+obj/
 
 # Doxygen documentation 
 html/*

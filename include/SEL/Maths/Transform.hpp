@@ -1,7 +1,7 @@
 #pragma once
 
 #include "SEL/Maths/Matrices/Mat4x4.hpp"
-#include "SEL/Maths/Vectors/Vec3.hpp"
+#include "SEL/Maths/Vecs/Vec3.hpp"
 
 #include <cmath>
 
