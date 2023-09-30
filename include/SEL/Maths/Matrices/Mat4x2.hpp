@@ -127,7 +127,7 @@ namespace sel {
 
 			return *this;
 		}
-
+		
 
 	private:
 

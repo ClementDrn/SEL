@@ -16,9 +16,9 @@ namespace sel {
 		///
 		/// This static method should be called once before generating numbers.
 		/// 
-		static void init()
+		static void init(uint32_t seed = std::random_device{}())
 		{
-			s_engine.seed(std::random_device()());
+			s_engine.seed(seed);
 		}
 
 		/// @brief Generates a pseudo-random float number between 0.0f and 1.0f.

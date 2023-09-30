@@ -128,6 +128,9 @@ namespace sel {
 			return *this;
 		}
 
+		
+		template <typename U>
+		friend Mat3x3<U> operator*(const Mat3x3<U>& lhs, const Mat3x3<U>& rhs);
 
 	private:
 

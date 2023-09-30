@@ -54,7 +54,7 @@ namespace sel {
 		static Mat2x3<T> identity()
 		{
 			return Mat2x3<T>(
-				1, 0, 0
+				1, 0, 0,
 				0, 1, 0
 			);
 		}

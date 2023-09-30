@@ -109,7 +109,9 @@ namespace sel {
 
 			return *this;
 		}
-
+		
+		template <typename U>
+		friend Mat2x2<U> operator*(const Mat2x2<U>& lhs, const Mat2x2<U>& rhs);
 
 	private:
 

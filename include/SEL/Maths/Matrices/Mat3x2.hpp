@@ -1,5 +1,6 @@
 #pragma once
 
+
 namespace sel {
 
 	/// @brief Representation of a 3x2 matrix.

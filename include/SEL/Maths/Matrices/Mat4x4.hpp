@@ -55,13 +55,13 @@ namespace sel {
 		/// 
 		/// @param other is the matrix to copy.
 		/// 
-		Mat4x4(const Mat4x3& other)
+		Mat4x4(const Mat4x4& other)
 			: m_data{ other[0][0], other[0][1], other[0][2], other[0][3], other[1][0], other[1][1], other[1][2], other[1][3], other[2][0], other[2][1], other[2][2], other[2][3], other[3][0], other[3][1], other[3][2], other[3][3] } {}
 
 
 		/// @return the identity matrix.
 		/// 
-		static Mat4x3<T> identity()
+		static Mat4x4<T> identity()
 		{
 			return Mat4x4<T>(
 				1, 0, 0, 0,
@@ -152,6 +152,9 @@ namespace sel {
 			return *this;
 		}
 
+		template <typename U>
+		friend Mat4x4<U> operator*(const Mat4x4<U>& lhs, const Mat4x4<U>& rhs);
+		
 
 	private:
 

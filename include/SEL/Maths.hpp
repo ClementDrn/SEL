@@ -1,4 +1,4 @@
-#pragma once
+// Incldue all the maths headers
 
 #include "SEL/Maths/Vector.hpp"
 #include "SEL/Maths/Matrix.hpp"

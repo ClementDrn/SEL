@@ -1,5 +1,4 @@
-#pragma once
-
+// Include all SEL headers
 
 #include "SEL/Utilities.hpp"
 #include "SEL/Maths.hpp"

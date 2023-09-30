@@ -1,4 +1,4 @@
-#pragma once
+// Include all Utilities headers
 
 #include "SEL/Utilities/Casts.hpp"
 #include "SEL/Utilities/Container.hpp"
