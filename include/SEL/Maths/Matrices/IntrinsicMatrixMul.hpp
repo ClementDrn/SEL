@@ -23,7 +23,7 @@ namespace sel::utils {
 		// Note: Computations are done twice.
 		vResult = _mm_add_ps(
 			vResult,
-			_mm_shuffle_ps(vResult, vResult, _MM_SHUFFLE(0, 1, 3, 2))
+			_mm_shuffle_ps(vResult, vResult, _MM_SHUFFLE(1, 0, 3, 2))
 		);
 		
         float tmp[4];
@@ -34,18 +34,22 @@ namespace sel::utils {
     inline void mulMatrix_1x2_2x2(int* dst, const int* a, const int* b)
     {
 		// Result is 1x2
-		__m128i vResult;     // 4 ints
+		__m128i vResult;	// 4 ints
+		__m128 vResultF;	// 4 floats (for shuffling)
 
-		vResult = _mm_mul_epi32(
+		vResult = _mm_mullo_epi32(
 			_mm_set_epi32(a[1], a[1], a[0], a[0]),
 			_mm_load_si128((__m128i*)b)      // 3, 2, 1, 0
 		);
+
+		// Cast to float (it is just interpreted as float, no conversion is done)
+		vResultF = _mm_castsi128_ps(vResult);
 
 		// Add 0 & 2 and 1 & 3
 		// Note: Computations are done twice.
 		vResult = _mm_add_epi32(
 			vResult,
-			_mm_shuffle_epi32(vResult, _MM_SHUFFLE(0, 1, 3, 2))
+			_mm_castps_si128(_mm_shuffle_ps(vResultF, vResultF, _MM_SHUFFLE(1, 0, 3, 2)))
 		);
 
 		int tmp[4];
@@ -66,16 +70,16 @@ namespace sel::utils {
         );
 
         // Add 0 & 2 and 1 & 3
-        // Note: Computations are done twice.
+		// Note: Computations are done twice.
         vResult1 = _mm_add_ps(
             vResult1,
-            _mm_shuffle_ps(vResult1, vResult1, _MM_SHUFFLE(0, 1, 3, 2))
+            _mm_shuffle_ps(vResult1, vResult1, _MM_SHUFFLE(1, 0, 3, 2))
         );
 
 		// 1x1_1x2
 		vResult2 = _mm_mul_ps(
-			_mm_set_ps(a[2], a[2], 0.0f, 0.0f),
-            _mm_set_ps(b[4], b[5], 0.0f, 0.0f)
+			_mm_set_ps(0.0f, 0.0f, a[2], a[2]),		// Putting numbers at the end, will place them at the beginning of the returned array.
+            _mm_set_ps(0.0f, 0.0f, b[5], b[4])
 		);
 		
 		// Add the two sub results
@@ -94,22 +98,26 @@ namespace sel::utils {
         // Result is 1x2
         // First we do 1x2_2x2, then 1x1_1x2
         __m128i vResult, vResult1, vResult2;
+		__m128 vResult1F;
 
-        vResult1 = _mm_mul_epi32(
+        vResult1 = _mm_mullo_epi32(
 			_mm_set_epi32(a[1], a[1], a[0], a[0]),
 			_mm_load_si128((__m128i*)b)      // 3, 2, 1, 0
 		);
 
+		// Cast to float (it is just interpreted as float, no conversion is done)
+		vResult1F = _mm_castsi128_ps(vResult1);
+
         // Add 0 & 2 and 1 & 3
         vResult1 = _mm_add_epi32(
 			vResult1,
-			_mm_shuffle_epi32(vResult1, _MM_SHUFFLE(0, 1, 3, 2))
+			_mm_castps_si128(_mm_shuffle_ps(vResult1F, vResult1F, _MM_SHUFFLE(1, 0, 3, 2)))
 		);
 
 		// 1x1_1x2
-		vResult2 = _mm_mul_epi32(
-            _mm_set_epi32(a[2], a[2], 0, 0),
-            _mm_set_epi32(b[4], b[5], 0, 0)
+		vResult2 = _mm_mullo_epi32(
+            _mm_set_epi32(0, 0, a[2], a[2]),
+            _mm_set_epi32(0, 0, b[5], b[4])
 		);
 
         // Add the two sub results
@@ -149,7 +157,7 @@ namespace sel::utils {
         // Note: Computations are done twice.
         vResult = _mm_add_ps(
             vResult,
-            _mm_shuffle_ps(vResult, vResult, _MM_SHUFFLE(0, 1, 3, 2))
+            _mm_shuffle_ps(vResult, vResult, _MM_SHUFFLE(1, 0, 3, 2))
         );
 
         float tmp[4];
@@ -162,13 +170,14 @@ namespace sel::utils {
 		// Result is 1x2
 		// Matrices are cut in half, 1x2 for a and 2x2 for b.
 		__m128i vResult, vResult1, vResult2;
+		__m128 vResultF;
 
-		vResult1 = _mm_mul_epi32(
+		vResult1 = _mm_mullo_epi32(
 			_mm_set_epi32(a[1], a[1], a[0], a[0]),
 			_mm_load_si128((__m128i*)b)      // 3, 2, 1, 0
 		);
 
-		vResult2 = _mm_mul_epi32(
+		vResult2 = _mm_mullo_epi32(
 			_mm_set_epi32(a[3], a[3], a[2], a[2]),
 			_mm_load_si128((__m128i*)&b[4])      // 3, 2, 1, 0
 		);
@@ -178,10 +187,13 @@ namespace sel::utils {
 			vResult2
 		);
 
+		// Cast to float (it is just interpreted as float, no conversion is done)
+		vResultF = _mm_castsi128_ps(vResult);
+
 		// Add 0 & 2 and 1 & 3
 		vResult = _mm_add_epi32(
 			vResult,
-			_mm_shuffle_epi32(vResult, _MM_SHUFFLE(0, 1, 3, 2))
+			_mm_castps_si128(_mm_shuffle_ps(vResultF, vResultF, _MM_SHUFFLE(1, 0, 3, 2)))
 		);
 
 		int tmp[4];
@@ -218,18 +230,22 @@ namespace sel::utils {
     {
 		// Result is 2x2
 		__m128i vA, vB, vResult;
+		__m128 vAf, vBf;
 
 		vA = _mm_load_si128((__m128i*)a);
 		vB = _mm_load_si128((__m128i*)b);
 
-		vResult = _mm_mul_epi32(
-			_mm_shuffle_epi32(vA, _MM_SHUFFLE(2, 2, 0, 0)),
-			_mm_shuffle_epi32(vB, _MM_SHUFFLE(1, 0, 1, 0))
+		vAf = _mm_castsi128_ps(vA);
+		vBf = _mm_castsi128_ps(vB);
+
+		vResult = _mm_mullo_epi32(
+			_mm_castps_si128(_mm_shuffle_ps(vAf, vAf, _MM_SHUFFLE(2, 2, 0, 0))),
+			_mm_castps_si128(_mm_shuffle_ps(vBf, vBf, _MM_SHUFFLE(1, 0, 1, 0)))
 		);
 
-		vResult = _mm_add_epi32(vResult, _mm_mul_epi32(
-			_mm_shuffle_epi32(vA, _MM_SHUFFLE(3, 3, 1, 1)),
-			_mm_shuffle_epi32(vB, _MM_SHUFFLE(3, 2, 3, 2)))
+		vResult = _mm_add_epi32(vResult, _mm_mullo_epi32(
+			_mm_castps_si128(_mm_shuffle_ps(vAf, vAf, _MM_SHUFFLE(3, 3, 1, 1))),
+			_mm_castps_si128(_mm_shuffle_ps(vBf, vBf, _MM_SHUFFLE(3, 2, 3, 2))))
 		);
 
 		_mm_store_si128((__m128i*)dst, vResult);
@@ -289,7 +305,7 @@ namespace sel::utils {
         // Result is 3x2
         mulMatrix_1x3_3x2(&dst[0], &a[0], b);
         mulMatrix_1x3_3x2(&dst[2], &a[3], b);
-        mulMatrix_1x3_3x2(&dst[6], &a[6], b);
+        mulMatrix_1x3_3x2(&dst[4], &a[6], b);
     }
 
     inline void mulMatrix_3x3_3x2(int* dst, const int* a, const int* b)
@@ -297,7 +313,7 @@ namespace sel::utils {
 		// Result is 3x2
 		mulMatrix_1x3_3x2(&dst[0], &a[0], b);
 		mulMatrix_1x3_3x2(&dst[2], &a[3], b);
-		mulMatrix_1x3_3x2(&dst[6], &a[6], b);
+		mulMatrix_1x3_3x2(&dst[4], &a[6], b);
 	}
 
 
@@ -306,7 +322,7 @@ namespace sel::utils {
         // Result is 3x2
         mulMatrix_1x4_4x2(&dst[0], &a[0], b);
         mulMatrix_1x4_4x2(&dst[2], &a[4], b);
-        mulMatrix_1x4_4x2(&dst[6], &a[8], b);
+        mulMatrix_1x4_4x2(&dst[4], &a[8], b);
     }
 
     inline void mulMatrix_3x4_4x2(int* dst, const int* a, const int* b)
@@ -314,7 +330,7 @@ namespace sel::utils {
         // Result is 3x2
         mulMatrix_1x4_4x2(&dst[0], &a[0], b);
         mulMatrix_1x4_4x2(&dst[2], &a[4], b);
-        mulMatrix_1x4_4x2(&dst[6], &a[8], b);
+        mulMatrix_1x4_4x2(&dst[4], &a[8], b);
     }
 
 
@@ -404,17 +420,17 @@ namespace sel::utils {
     {
 		// Result is 1x3
 		__m128i vB, vResult;
-
+		
 		// Row 0 of b
-		vB = _mm_set_epi32(b[0], b[1], b[2], 0);
-		vResult = _mm_mul_epi32(
-			_mm_load_si128((__m128i*)&a[0]),
+		vB = _mm_set_epi32(0, b[2], b[1], b[0]);
+		vResult = _mm_mullo_epi32(
+			_mm_set1_epi32(a[0]),
 			vB
 		);
 		// Row 1 of b
-		vB = _mm_set_epi32(b[3], b[4], b[5], 0);
-		vResult = _mm_add_epi32(vResult, _mm_mul_epi32(
-			_mm_load_si128((__m128i*)&a[1]),
+		vB = _mm_set_epi32(0, b[5], b[4], b[3]);
+		vResult = _mm_add_epi32(vResult, _mm_mullo_epi32(
+			_mm_set1_epi32(a[1]),
 			vB
 		));
 
@@ -459,21 +475,21 @@ namespace sel::utils {
 		__m128i vB, vResult;
 
 		// Row 0 of b
-		vB = _mm_set_epi32(b[0], b[1], b[2], 0);
-		vResult = _mm_mul_epi32(
-			_mm_load_si128((__m128i*)&a[0]),
+		vB = _mm_set_epi32(0, b[2], b[1], b[0]);
+		vResult = _mm_mullo_epi32(
+			_mm_set1_epi32(a[0]),
 			vB
 		);
 		// Row 1 of b
-		vB = _mm_set_epi32(b[3], b[4], b[5], 0);
-		vResult = _mm_add_epi32(vResult, _mm_mul_epi32(
-			_mm_load_si128((__m128i*)&a[1]),
+		vB = _mm_set_epi32(0, b[5], b[4], b[3]);
+		vResult = _mm_add_epi32(vResult, _mm_mullo_epi32(
+			_mm_set1_epi32(a[1]),
 			vB
 		));
 		// Row 2 of b
-		vB = _mm_set_epi32(b[6], b[7], b[8], 0);
-		vResult = _mm_add_epi32(vResult, _mm_mul_epi32(
-			_mm_load_si128((__m128i*)&a[2]),
+		vB = _mm_set_epi32(0, b[8], b[7], b[6]);
+		vResult = _mm_add_epi32(vResult, _mm_mullo_epi32(
+			_mm_set1_epi32(a[2]),
 			vB
 		));
 
@@ -524,27 +540,27 @@ namespace sel::utils {
         __m128i vB, vResult;
 
 		// Row 0 of b
-		vB = _mm_set_epi32(b[0], b[1], b[2], 0);
-		vResult = _mm_mul_epi32(
-			_mm_load_si128((__m128i*)&a[0]),
+		vB = _mm_set_epi32(0, b[2], b[1], b[0]);
+		vResult = _mm_mullo_epi32(
+			_mm_set1_epi32(a[0]),
 			vB
 		);
 		// Row 1 of b
-		vB = _mm_set_epi32(b[3], b[4], b[5], 0);
-		vResult = _mm_add_epi32(vResult, _mm_mul_epi32(
-			_mm_load_si128((__m128i*)&a[1]),
+		vB = _mm_set_epi32(0, b[5], b[4], b[3]);
+		vResult = _mm_add_epi32(vResult, _mm_mullo_epi32(
+			_mm_set1_epi32(a[1]),
 			vB
 		));
 		// Row 2 of b
-		vB = _mm_set_epi32(b[6], b[7], b[8], 0);
-		vResult = _mm_add_epi32(vResult, _mm_mul_epi32(
-			_mm_load_si128((__m128i*)&a[2]),
+		vB = _mm_set_epi32(0, b[8], b[7], b[6]);
+		vResult = _mm_add_epi32(vResult, _mm_mullo_epi32(
+			_mm_set1_epi32(a[2]),
 			vB
 		));
 		// Row 3 of b
-		vB = _mm_set_epi32(b[9], b[10], b[11], 0);
-		vResult = _mm_add_epi32(vResult, _mm_mul_epi32(
-			_mm_load_si128((__m128i*)&a[3]),
+		vB = _mm_set_epi32(0, b[11], b[10], b[9]);
+		vResult = _mm_add_epi32(vResult, _mm_mullo_epi32(
+			_mm_set1_epi32(a[3]),
 			vB
 		));
 
@@ -663,14 +679,14 @@ namespace sel::utils {
     {
 		// Result is 4x3
 		mulMatrix_2x2_2x3(&dst[0], &a[0], b);
-		mulMatrix_2x2_2x3(&dst[4], &a[4], b);
+		mulMatrix_2x2_2x3(&dst[6], &a[4], b);
     }
 
     inline void mulMatrix_4x2_2x3(int* dst, const int* a, const int* b)
     {
         // Result is 4x3
         mulMatrix_2x2_2x3(&dst[0], &a[0], b);
-        mulMatrix_2x2_2x3(&dst[4], &a[4], b);
+        mulMatrix_2x2_2x3(&dst[6], &a[4], b);
     }
 
 
@@ -697,18 +713,18 @@ namespace sel::utils {
     {
 		// Result is 4x3
         mulMatrix_1x4_4x3(&dst[0], &a[0], b);
-        mulMatrix_1x4_4x3(&dst[4], &a[4], b);
-        mulMatrix_1x4_4x3(&dst[8], &a[8], b);
-        mulMatrix_1x4_4x3(&dst[12], &a[12], b);
+        mulMatrix_1x4_4x3(&dst[3], &a[4], b);
+        mulMatrix_1x4_4x3(&dst[6], &a[8], b);
+        mulMatrix_1x4_4x3(&dst[9], &a[12], b);
     }
 
     inline void mulMatrix_4x4_4x3(int* dst, const int* a, const int* b)
     {
 		// Result is 4x3
 		mulMatrix_1x4_4x3(&dst[0], &a[0], b);
-		mulMatrix_1x4_4x3(&dst[4], &a[4], b);
-		mulMatrix_1x4_4x3(&dst[8], &a[8], b);
-		mulMatrix_1x4_4x3(&dst[12], &a[12], b);
+		mulMatrix_1x4_4x3(&dst[3], &a[4], b);
+		mulMatrix_1x4_4x3(&dst[6], &a[8], b);
+		mulMatrix_1x4_4x3(&dst[9], &a[12], b);
     }
 
 
@@ -743,14 +759,14 @@ namespace sel::utils {
 
 		// Row 0 of b
 		vB = _mm_load_si128((__m128i*)&b[0]);
-		vResult = _mm_mul_epi32(
-			_mm_load_si128((__m128i*)&a[0]),
+		vResult = _mm_mullo_epi32(
+			_mm_set1_epi32(a[0]),		// The register is filled with the first element of a
 			vB
 		);
 		// Row 1 of b
 		vB = _mm_load_si128((__m128i*)&b[4]);
-		vResult = _mm_add_epi32(vResult, _mm_mul_epi32(
-			_mm_load_si128((__m128i*)&a[1]),
+		vResult = _mm_add_epi32(vResult, _mm_mullo_epi32(
+			_mm_set1_epi32(a[1]),
 			vB
 		));
 
@@ -792,20 +808,20 @@ namespace sel::utils {
 
 		// Row 0 of b
 		vB = _mm_load_si128((__m128i*)&b[0]);
-		vResult = _mm_mul_epi32(
-			_mm_load_si128((__m128i*)&a[0]),
+		vResult = _mm_mullo_epi32(
+			_mm_set1_epi32(a[0]),
 			vB
 		);
 		// Row 1 of b
 		vB = _mm_load_si128((__m128i*)&b[4]);
-		vResult = _mm_add_epi32(vResult, _mm_mul_epi32(
-			_mm_load_si128((__m128i*)&a[1]),
+		vResult = _mm_add_epi32(vResult, _mm_mullo_epi32(
+			_mm_set1_epi32(a[1]),
 			vB
 		));
 		// Row 2 of b
 		vB = _mm_load_si128((__m128i*)&b[8]);
-		vResult = _mm_add_epi32(vResult, _mm_mul_epi32(
-			_mm_load_si128((__m128i*)&a[2]),
+		vResult = _mm_add_epi32(vResult, _mm_mullo_epi32(
+			_mm_set1_epi32(a[2]),
 			vB
 		));
 
@@ -853,26 +869,26 @@ namespace sel::utils {
 
 		// Row 0 of b
 		vB = _mm_load_si128((__m128i*)&b[0]);
-		vResult = _mm_mul_epi32(
-			_mm_load_si128((__m128i*)&a[0]),
+		vResult = _mm_mullo_epi32(
+			_mm_set1_epi32(a[0]),
 			vB
 		);
 		// Row 1 of b
 		vB = _mm_load_si128((__m128i*)&b[4]);
-		vResult = _mm_add_epi32(vResult, _mm_mul_epi32(
-			_mm_load_si128((__m128i*)&a[1]),
+		vResult = _mm_add_epi32(vResult, _mm_mullo_epi32(
+			_mm_set1_epi32(a[1]),
 			vB
 		));
 		// Row 2 of b
 		vB = _mm_load_si128((__m128i*)&b[8]);
-		vResult = _mm_add_epi32(vResult, _mm_mul_epi32(
-			_mm_load_si128((__m128i*)&a[2]),
+		vResult = _mm_add_epi32(vResult, _mm_mullo_epi32(
+			_mm_set1_epi32(a[2]),
 			vB
 		));
 		// Row 3 of b
 		vB = _mm_load_si128((__m128i*)&b[12]);
-		vResult = _mm_add_epi32(vResult, _mm_mul_epi32(
-			_mm_load_si128((__m128i*)&a[3]),
+		vResult = _mm_add_epi32(vResult, _mm_mullo_epi32(
+			_mm_set1_epi32(a[3]),
 			vB
 		));
 
@@ -959,18 +975,18 @@ namespace sel::utils {
     {
 		// Result is 3x4
 		// We calculate row by row.
-		mulMatrix_1x4_4x4(&dst[0], &a[0], b);
-		mulMatrix_1x4_4x4(&dst[4], &a[3], b);
-		mulMatrix_1x4_4x4(&dst[8], &a[6], b);
+		mulMatrix_1x3_3x4(&dst[0], &a[0], b);
+		mulMatrix_1x3_3x4(&dst[4], &a[3], b);
+		mulMatrix_1x3_3x4(&dst[8], &a[6], b);
 	}
 
 	inline void mulMatrix_3x3_3x4(int* dst, const int* a, const int* b)
 	{
 		// Result is 3x4
 		// We calculate row by row.
-		mulMatrix_1x4_4x4(&dst[0], &a[0], b);
-		mulMatrix_1x4_4x4(&dst[4], &a[3], b);
-		mulMatrix_1x4_4x4(&dst[8], &a[6], b);
+		mulMatrix_1x3_3x4(&dst[0], &a[0], b);
+		mulMatrix_1x3_3x4(&dst[4], &a[3], b);
+		mulMatrix_1x3_3x4(&dst[8], &a[6], b);
 	}
 
 
@@ -1001,7 +1017,7 @@ namespace sel::utils {
 		// Result is 4x4
 		// We calculate 2-rows blocks each at a time.
 		mulMatrix_2x2_2x4(&dst[0], &a[0], b);
-		mulMatrix_2x2_2x4(&dst[4], &a[4], b);
+		mulMatrix_2x2_2x4(&dst[8], &a[4], b);
     }
 
 	inline void mulMatrix_4x2_2x4(int* dst, const int* a, const int* b)
@@ -1009,7 +1025,7 @@ namespace sel::utils {
 		// Result is 4x4
 		// We calculate 2-rows blocks each at a time.
 		mulMatrix_2x2_2x4(&dst[0], &a[0], b);
-		mulMatrix_2x2_2x4(&dst[4], &a[4], b);
+		mulMatrix_2x2_2x4(&dst[8], &a[4], b);
 	}
 
 

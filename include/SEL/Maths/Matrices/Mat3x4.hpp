@@ -31,17 +31,16 @@ namespace sel {
 		/// 
 		/// @param m00 is the value of the first row, first column.
 		/// @param m01 is the value of the first row, second column.
+		/// @param m02 is the value of the first row, third column.
 		/// @param m10 is the value of the second row, first column.
 		/// @param m11 is the value of the second row, second column.
+		/// @param m12 is the value of the second row, third column.
 		/// @param m20 is the value of the third row, first column.
 		/// @param m21 is the value of the third row, second column.
-		/// @param m30 is the value of the fourth row, first column.
-		/// @param m31 is the value of the fourth row, second column.
-		/// @param m32 is the value of the fourth row, third column.
-		/// @param m33 is the value of the fourth row, fourth column.
+		/// @param m22 is the value of the third row, third column.
 		/// 
-		Mat3x4(T m00, T m01, T m02, T m03, T m10, T m11, T m12, T m13, T m20, T m21, T m22, T m23, T m30, T m31, T m32, T m33)
-			: m_data{ m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33 } {}
+		Mat3x4(T m00, T m01, T m02, T m03, T m10, T m11, T m12, T m13, T m20, T m21, T m22, T m23)
+			: m_data{ m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23 } {}
 
 		/// @brief Copy constructor.
 		///

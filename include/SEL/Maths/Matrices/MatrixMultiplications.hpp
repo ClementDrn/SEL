@@ -38,12 +38,12 @@ namespace sel {
 		// Intrinsic multiplication is only available for float and int matrices.
 		if constexpr (std::is_same_v<T, float>)
 		{
-			utils::mulMatrix_4x4_4x4((float*)result.m_data, (float*)lhs.m_data, (float*)rhs.m_data);
+			utils::mulMatrix_4x4_4x4((float*)&result, (float*)&lhs, (float*)&rhs);
 			return result;
 		}
 		else if constexpr (std::is_same_v<T, int>)
 		{
-			utils::mulMatrix_4x4_4x4((int*)result.m_data, (int*)lhs.m_data, (int*)rhs.m_data);
+			utils::mulMatrix_4x4_4x4((int*)&result, (int*)&lhs, (int*)&rhs);
 			return result;
 		}
 #endif
@@ -93,12 +93,12 @@ namespace sel {
 		// Intrinsic multiplication is only available for float and int matrices.
 		if constexpr (std::is_same_v<T, float>)
 		{
-			utils::mulMatrix_4x3_3x4((float*)result.m_data, (float*)lhs.m_data, (float*)rhs.m_data);
+			utils::mulMatrix_4x3_3x4((float*)&result, (float*)&lhs, (float*)&rhs);
 			return result;
 		}
 		else if constexpr (std::is_same_v<T, int>)
 		{
-			utils::mulMatrix_4x3_3x4((int*)result.m_data, (int*)lhs.m_data, (int*)rhs.m_data);
+			utils::mulMatrix_4x3_3x4((int*)&result, (int*)&lhs, (int*)&rhs);
 			return result;
 		}
 #endif
@@ -148,12 +148,12 @@ namespace sel {
 		// Intrinsic multiplication is only available for float and int matrices.
 		if constexpr (std::is_same_v<T, float>)
 		{
-			utils::mulMatrix_4x2_2x4((float*)result.m_data, (float*)lhs.m_data, (float*)rhs.m_data);
+			utils::mulMatrix_4x2_2x4((float*)&result, (float*)&lhs, (float*)&rhs);
 			return result;
 		}
 		else if constexpr (std::is_same_v<T, int>)
 		{
-			utils::mulMatrix_4x2_2x4((int*)result.m_data, (int*)lhs.m_data, (int*)rhs.m_data);
+			utils::mulMatrix_4x2_2x4((int*)&result, (int*)&lhs, (int*)&rhs);
 			return result;
 		}
 #endif
@@ -206,12 +206,12 @@ namespace sel {
 		// Intrinsic multiplication is only available for float and int matrices.
 		if constexpr (std::is_same_v<T, float>)
 		{
-			utils::mulMatrix_4x4_4x3((float*)result.m_data, (float*)lhs.m_data, (float*)rhs.m_data);
+			utils::mulMatrix_4x4_4x3((float*)&result, (float*)&lhs, (float*)&rhs);
 			return result;
 		}
 		else if constexpr (std::is_same_v<T, int>)
 		{
-			utils::mulMatrix_4x4_4x3((int*)result.m_data, (int*)lhs.m_data, (int*)rhs.m_data);
+			utils::mulMatrix_4x4_4x3((int*)&result, (int*)&lhs, (int*)&rhs);
 			return result;
 		}
 #endif
@@ -257,12 +257,12 @@ namespace sel {
 		// Intrinsic multiplication is only available for float and int matrices.
 		if constexpr (std::is_same_v<T, float>)
 		{
-			utils::mulMatrix_4x3_3x3((float*)result.m_data, (float*)lhs.m_data, (float*)rhs.m_data);
+			utils::mulMatrix_4x3_3x3((float*)&result, (float*)&lhs, (float*)&rhs);
 			return result;
 		}
 		else if constexpr (std::is_same_v<T, int>)
 		{
-			utils::mulMatrix_4x3_3x3((int*)result.m_data, (int*)lhs.m_data, (int*)rhs.m_data);
+			utils::mulMatrix_4x3_3x3((int*)&result, (int*)&lhs, (int*)&rhs);
 			return result;
 		}
 #endif
@@ -308,12 +308,12 @@ namespace sel {
 		// Intrinsic multiplication is only available for float and int matrices.
 		if constexpr (std::is_same_v<T, float>)
 		{
-			utils::mulMatrix_4x2_2x3((float*)result.m_data, (float*)lhs.m_data, (float*)rhs.m_data);
+			utils::mulMatrix_4x2_2x3((float*)&result, (float*)&lhs, (float*)&rhs);
 			return result;
 		}
 		else if constexpr (std::is_same_v<T, int>)
 		{
-			utils::mulMatrix_4x2_2x3((int*)result.m_data, (int*)lhs.m_data, (int*)rhs.m_data);
+			utils::mulMatrix_4x2_2x3((int*)&result, (int*)&lhs, (int*)&rhs);
 			return result;
 		}
 #endif
@@ -362,12 +362,12 @@ namespace sel {
 		// Intrinsic multiplication is only available for float and int matrices.
 		if constexpr (std::is_same_v<T, float>)
 		{
-			utils::mulMatrix_4x4_4x2((float*)result.m_data, (float*)lhs.m_data, (float*)rhs.m_data);
+			utils::mulMatrix_4x4_4x2((float*)&result, (float*)&lhs, (float*)&rhs);
 			return result;
 		}
 		else if constexpr (std::is_same_v<T, int>)
 		{
-			utils::mulMatrix_4x4_4x2((int*)result.m_data, (int*)lhs.m_data, (int*)rhs.m_data);
+			utils::mulMatrix_4x4_4x2((int*)&result, (int*)&lhs, (int*)&rhs);
 			return result;
 		}
 #endif
@@ -409,12 +409,12 @@ namespace sel {
 		// Intrinsic multiplication is only available for float and int matrices.
 		if constexpr (std::is_same_v<T, float>)
 		{
-			utils::mulMatrix_4x3_3x2((float*)result.m_data, (float*)lhs.m_data, (float*)rhs.m_data);
+			utils::mulMatrix_4x3_3x2((float*)&result, (float*)&lhs, (float*)&rhs);
 			return result;
 		}
 		else if constexpr (std::is_same_v<T, int>)
 		{
-			utils::mulMatrix_4x3_3x2((int*)result.m_data, (int*)lhs.m_data, (int*)rhs.m_data);
+			utils::mulMatrix_4x3_3x2((int*)&result, (int*)&lhs, (int*)&rhs);
 			return result;
 		}
 #endif
@@ -456,12 +456,12 @@ namespace sel {
 		// Intrinsic multiplication is only available for float and int matrices.
 		if constexpr (std::is_same_v<T, float>)
 		{
-			utils::mulMatrix_4x2_2x2((float*)result.m_data, (float*)lhs.m_data, (float*)rhs.m_data);
+			utils::mulMatrix_4x2_2x2((float*)&result, (float*)&lhs, (float*)&rhs);
 			return result;
 		}
 		else if constexpr (std::is_same_v<T, int>)
 		{
-			utils::mulMatrix_4x2_2x2((int*)result.m_data, (int*)lhs.m_data, (int*)rhs.m_data);
+			utils::mulMatrix_4x2_2x2((int*)&result, (int*)&lhs, (int*)&rhs);
 			return result;
 		}
 #endif
@@ -506,12 +506,12 @@ namespace sel {
 		// Intrinsic multiplication is only available for float and int matrices.
 		if constexpr (std::is_same_v<T, float>)
 		{
-			utils::mulMatrix_3x4_4x4((float*)result.m_data, (float*)lhs.m_data, (float*)rhs.m_data);
+			utils::mulMatrix_3x4_4x4((float*)&result, (float*)&lhs, (float*)&rhs);
 			return result;
 		}
 		else if constexpr (std::is_same_v<T, int>)
 		{
-			utils::mulMatrix_3x4_4x4((int*)result.m_data, (int*)lhs.m_data, (int*)rhs.m_data);
+			utils::mulMatrix_3x4_4x4((int*)&result, (int*)&lhs, (int*)&rhs);
 			return result;
 		}
 #endif
@@ -555,12 +555,12 @@ namespace sel {
 		// Intrinsic multiplication is only available for float and int matrices.
 		if constexpr (std::is_same_v<T, float>)
 		{
-			utils::mulMatrix_3x3_3x4((float*)result.m_data, (float*)lhs.m_data, (float*)rhs.m_data);
+			utils::mulMatrix_3x3_3x4((float*)&result, (float*)&lhs, (float*)&rhs);
 			return result;
 		}
 		else if constexpr (std::is_same_v<T, int>)
 		{
-			utils::mulMatrix_3x3_3x4((int*)result.m_data, (int*)lhs.m_data, (int*)rhs.m_data);
+			utils::mulMatrix_3x3_3x4((int*)&result, (int*)&lhs, (int*)&rhs);
 			return result;
 		}
 #endif
@@ -604,12 +604,12 @@ namespace sel {
 		// Intrinsic multiplication is only available for float and int matrices.
 		if constexpr (std::is_same_v<T, float>)
 		{
-			utils::mulMatrix_3x2_2x4((float*)result.m_data, (float*)lhs.m_data, (float*)rhs.m_data);
+			utils::mulMatrix_3x2_2x4((float*)&result, (float*)&lhs, (float*)&rhs);
 			return result;
 		}
 		else if constexpr (std::is_same_v<T, int>)
 		{
-			utils::mulMatrix_3x2_2x4((int*)result.m_data, (int*)lhs.m_data, (int*)rhs.m_data);
+			utils::mulMatrix_3x2_2x4((int*)&result, (int*)&lhs, (int*)&rhs);
 			return result;
 		}
 #endif
@@ -656,12 +656,12 @@ namespace sel {
 		// Intrinsic multiplication is only available for float and int matrices.
 		if constexpr (std::is_same_v<T, float>)
 		{
-			utils::mulMatrix_3x4_4x3((float*)result.m_data, (float*)lhs.m_data, (float*)rhs.m_data);
+			utils::mulMatrix_3x4_4x3((float*)&result, (float*)&lhs, (float*)&rhs);
 			return result;
 		}
 		else if constexpr (std::is_same_v<T, int>)
 		{
-			utils::mulMatrix_3x4_4x3((int*)result.m_data, (int*)lhs.m_data, (int*)rhs.m_data);
+			utils::mulMatrix_3x4_4x3((int*)&result, (int*)&lhs, (int*)&rhs);
 			return result;
 		}
 #endif
@@ -702,12 +702,12 @@ namespace sel {
 		// Intrinsic multiplication is only available for float and int matrices.
 		if constexpr (std::is_same_v<T, float>)
 		{
-			utils::mulMatrix_3x3_3x3((float*)result.m_data, (float*)lhs.m_data, (float*)rhs.m_data);
+			utils::mulMatrix_3x3_3x3((float*)&result, (float*)&lhs, (float*)&rhs);
 			return result;
 		}
 		else if constexpr (std::is_same_v<T, int>)
 		{
-			utils::mulMatrix_3x3_3x3((int*)result.m_data, (int*)lhs.m_data, (int*)rhs.m_data);
+			utils::mulMatrix_3x3_3x3((int*)&result, (int*)&lhs, (int*)&rhs);
 			return result;
 		}
 #endif
@@ -748,12 +748,12 @@ namespace sel {
 		// Intrinsic multiplication is only available for float and int matrices.
 		if constexpr (std::is_same_v<T, float>)
 		{
-			utils::mulMatrix_3x2_2x3((float*)result.m_data, (float*)lhs.m_data, (float*)rhs.m_data);
+			utils::mulMatrix_3x2_2x3((float*)&result, (float*)&lhs, (float*)&rhs);
 			return result;
 		}
 		else if constexpr (std::is_same_v<T, int>)
 		{
-			utils::mulMatrix_3x2_2x3((int*)result.m_data, (int*)lhs.m_data, (int*)rhs.m_data);
+			utils::mulMatrix_3x2_2x3((int*)&result, (int*)&lhs, (int*)&rhs);
 			return result;
 		}
 #endif
@@ -797,12 +797,12 @@ namespace sel {
 		// Intrinsic multiplication is only available for float and int matrices.
 		if constexpr (std::is_same_v<T, float>)
 		{
-			utils::mulMatrix_3x4_4x2((float*)result.m_data, (float*)lhs.m_data, (float*)rhs.m_data);
+			utils::mulMatrix_3x4_4x2((float*)&result, (float*)&lhs, (float*)&rhs);
 			return result;
 		}
 		else if constexpr (std::is_same_v<T, int>)
 		{
-			utils::mulMatrix_3x4_4x2((int*)result.m_data, (int*)lhs.m_data, (int*)rhs.m_data);
+			utils::mulMatrix_3x4_4x2((int*)&result, (int*)&lhs, (int*)&rhs);
 			return result;
 		}
 #endif
@@ -840,12 +840,12 @@ namespace sel {
 		// Intrinsic multiplication is only available for float and int matrices.
 		if constexpr (std::is_same_v<T, float>)
 		{
-			utils::mulMatrix_3x3_3x2((float*)result.m_data, (float*)lhs.m_data, (float*)rhs.m_data);
+			utils::mulMatrix_3x3_3x2((float*)&result, (float*)&lhs, (float*)&rhs);
 			return result;
 		}
 		else if constexpr (std::is_same_v<T, int>)
 		{
-			utils::mulMatrix_3x3_3x2((int*)result.m_data, (int*)lhs.m_data, (int*)rhs.m_data);
+			utils::mulMatrix_3x3_3x2((int*)&result, (int*)&lhs, (int*)&rhs);
 			return result;
 		}
 #endif
@@ -883,12 +883,12 @@ namespace sel {
 		// Intrinsic multiplication is only available for float and int matrices.
 		if constexpr (std::is_same_v<T, float>)
 		{
-			utils::mulMatrix_3x2_2x2((float*)result.m_data, (float*)lhs.m_data, (float*)rhs.m_data);
+			utils::mulMatrix_3x2_2x2((float*)&result, (float*)&lhs, (float*)&rhs);
 			return result;
 		}
 		else if constexpr (std::is_same_v<T, int>)
 		{
-			utils::mulMatrix_3x2_2x2((int*)result.m_data, (int*)lhs.m_data, (int*)rhs.m_data);
+			utils::mulMatrix_3x2_2x2((int*)&result, (int*)&lhs, (int*)&rhs);
 			return result;
 		}
 #endif
@@ -929,12 +929,12 @@ namespace sel {
 		// Intrinsic multiplication is only available for float and int matrices.
 		if constexpr (std::is_same_v<T, float>)
 		{
-			utils::mulMatrix_2x4_4x4((float*)result.m_data, (float*)lhs.m_data, (float*)rhs.m_data);
+			utils::mulMatrix_2x4_4x4((float*)&result, (float*)&lhs, (float*)&rhs);
 			return result;
 		}
 		else if constexpr (std::is_same_v<T, int>)
 		{
-			utils::mulMatrix_2x4_4x4((int*)result.m_data, (int*)lhs.m_data, (int*)rhs.m_data);
+			utils::mulMatrix_2x4_4x4((int*)&result, (int*)&lhs, (int*)&rhs);
 			return result;
 		}
 #endif
@@ -972,12 +972,12 @@ namespace sel {
 		// Intrinsic multiplication is only available for float and int matrices.
 		if constexpr (std::is_same_v<T, float>)
 		{
-			utils::mulMatrix_2x3_3x4((float*)result.m_data, (float*)lhs.m_data, (float*)rhs.m_data);
+			utils::mulMatrix_2x3_3x4((float*)&result, (float*)&lhs, (float*)&rhs);
 			return result;
 		}
 		else if constexpr (std::is_same_v<T, int>)
 		{
-			utils::mulMatrix_2x3_3x4((int*)result.m_data, (int*)lhs.m_data, (int*)rhs.m_data);
+			utils::mulMatrix_2x3_3x4((int*)&result, (int*)&lhs, (int*)&rhs);
 			return result;
 		}
 #endif
@@ -1015,12 +1015,12 @@ namespace sel {
 		// Intrinsic multiplication is only available for float and int matrices.
 		if constexpr (std::is_same_v<T, float>)
 		{
-			utils::mulMatrix_2x2_2x4((float*)result.m_data, (float*)lhs.m_data, (float*)rhs.m_data);
+			utils::mulMatrix_2x2_2x4((float*)&result, (float*)&lhs, (float*)&rhs);
 			return result;
 		}
 		else if constexpr (std::is_same_v<T, int>)
 		{
-			utils::mulMatrix_2x2_2x4((int*)result.m_data, (int*)lhs.m_data, (int*)rhs.m_data);
+			utils::mulMatrix_2x2_2x4((int*)&result, (int*)&lhs, (int*)&rhs);
 			return result;
 		}
 #endif
@@ -1061,12 +1061,12 @@ namespace sel {
 		// Intrinsic multiplication is only available for float and int matrices.
 		if constexpr (std::is_same_v<T, float>)
 		{
-			utils::mulMatrix_2x4_4x3((float*)result.m_data, (float*)lhs.m_data, (float*)rhs.m_data);
+			utils::mulMatrix_2x4_4x3((float*)&result, (float*)&lhs, (float*)&rhs);
 			return result;
 		}
 		else if constexpr (std::is_same_v<T, int>)
 		{
-			utils::mulMatrix_2x4_4x3((int*)result.m_data, (int*)lhs.m_data, (int*)rhs.m_data);
+			utils::mulMatrix_2x4_4x3((int*)&result, (int*)&lhs, (int*)&rhs);
 			return result;
 		}
 #endif
@@ -1102,12 +1102,12 @@ namespace sel {
 		// Intrinsic multiplication is only available for float and int matrices.
 		if constexpr (std::is_same_v<T, float>)
 		{
-			utils::mulMatrix_2x3_3x3((float*)result.m_data, (float*)lhs.m_data, (float*)rhs.m_data);
+			utils::mulMatrix_2x3_3x3((float*)&result, (float*)&lhs, (float*)&rhs);
 			return result;
 		}
 		else if constexpr (std::is_same_v<T, int>)
 		{
-			utils::mulMatrix_2x3_3x3((int*)result.m_data, (int*)lhs.m_data, (int*)rhs.m_data);
+			utils::mulMatrix_2x3_3x3((int*)&result, (int*)&lhs, (int*)&rhs);
 			return result;
 		}
 #endif
@@ -1143,12 +1143,12 @@ namespace sel {
 		// Intrinsic multiplication is only available for float and int matrices.
 		if constexpr (std::is_same_v<T, float>)
 		{
-			utils::mulMatrix_2x2_2x3((float*)result.m_data, (float*)lhs.m_data, (float*)rhs.m_data);
+			utils::mulMatrix_2x2_2x3((float*)&result, (float*)&lhs, (float*)&rhs);
 			return result;
 		}
 		else if constexpr (std::is_same_v<T, int>)
 		{
-			utils::mulMatrix_2x2_2x3((int*)result.m_data, (int*)lhs.m_data, (int*)rhs.m_data);
+			utils::mulMatrix_2x2_2x3((int*)&result, (int*)&lhs, (int*)&rhs);
 			return result;
 		}
 #endif
@@ -1187,12 +1187,12 @@ namespace sel {
 		// Intrinsic multiplication is only available for float and int matrices.
 		if constexpr (std::is_same_v<T, float>)
 		{
-			utils::mulMatrix_2x4_4x2((float*)result.m_data, (float*)lhs.m_data, (float*)rhs.m_data);
+			utils::mulMatrix_2x4_4x2((float*)&result, (float*)&lhs, (float*)&rhs);
 			return result;
 		}
 		else if constexpr (std::is_same_v<T, int>)
 		{
-			utils::mulMatrix_2x4_4x2((int*)result.m_data, (int*)lhs.m_data, (int*)rhs.m_data);
+			utils::mulMatrix_2x4_4x2((int*)&result, (int*)&lhs, (int*)&rhs);
 			return result;
 		}
 #endif
@@ -1226,12 +1226,12 @@ namespace sel {
 		// Intrinsic multiplication is only available for float and int matrices.
 		if constexpr (std::is_same_v<T, float>)
 		{
-			utils::mulMatrix_2x3_3x2((float*)result.m_data, (float*)lhs.m_data, (float*)rhs.m_data);
+			utils::mulMatrix_2x3_3x2((float*)&result, (float*)&lhs, (float*)&rhs);
 			return result;
 		}
 		else if constexpr (std::is_same_v<T, int>)
 		{
-			utils::mulMatrix_2x3_3x2((int*)result.m_data, (int*)lhs.m_data, (int*)rhs.m_data);
+			utils::mulMatrix_2x3_3x2((int*)&result, (int*)&lhs, (int*)&rhs);
 			return result;
 		}
 #endif
@@ -1265,12 +1265,12 @@ namespace sel {
 		// Intrinsic multiplication is only available for float and int matrices.
 		if constexpr (std::is_same_v<T, float>)
 		{
-			utils::mulMatrix_2x2_2x3((float*)result.m_data, (float*)lhs.m_data, (float*)rhs.m_data);
+			utils::mulMatrix_2x2_2x2((float*)&result, (float*)&lhs, (float*)&rhs);
 			return result;
 		}
 		else if constexpr (std::is_same_v<T, int>)
 		{
-			utils::mulMatrix_2x2_2x3((int*)result.m_data, (int*)lhs.m_data, (int*)rhs.m_data);
+			utils::mulMatrix_2x2_2x2((int*)&result, (int*)&lhs, (int*)&rhs);
 			return result;
 		}
 #endif
