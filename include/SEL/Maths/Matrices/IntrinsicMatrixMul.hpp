@@ -39,7 +39,7 @@ namespace sel::utils {
 
 		vResult = _mm_mullo_epi32(
 			_mm_set_epi32(a[1], a[1], a[0], a[0]),
-			_mm_load_si128((__m128i*)b)      // 3, 2, 1, 0
+			_mm_lddqu_si128((__m128i*)b)      // 3, 2, 1, 0
 		);
 
 		// Cast to float (it is just interpreted as float, no conversion is done)
@@ -102,7 +102,7 @@ namespace sel::utils {
 
         vResult1 = _mm_mullo_epi32(
 			_mm_set_epi32(a[1], a[1], a[0], a[0]),
-			_mm_load_si128((__m128i*)b)      // 3, 2, 1, 0
+			_mm_lddqu_si128((__m128i*)&b[0])      // 3, 2, 1, 0
 		);
 
 		// Cast to float (it is just interpreted as float, no conversion is done)
@@ -174,12 +174,12 @@ namespace sel::utils {
 
 		vResult1 = _mm_mullo_epi32(
 			_mm_set_epi32(a[1], a[1], a[0], a[0]),
-			_mm_load_si128((__m128i*)b)      // 3, 2, 1, 0
+			_mm_lddqu_si128((__m128i*)b)      // 3, 2, 1, 0
 		);
 
 		vResult2 = _mm_mullo_epi32(
 			_mm_set_epi32(a[3], a[3], a[2], a[2]),
-			_mm_load_si128((__m128i*)&b[4])      // 3, 2, 1, 0
+			_mm_lddqu_si128((__m128i*)&b[4])      // 3, 2, 1, 0
 		);
 
 		vResult = _mm_add_epi32(
@@ -232,8 +232,8 @@ namespace sel::utils {
 		__m128i vA, vB, vResult;
 		__m128 vAf, vBf;
 
-		vA = _mm_load_si128((__m128i*)a);
-		vB = _mm_load_si128((__m128i*)b);
+		vA = _mm_lddqu_si128((__m128i*)a);
+		vB = _mm_lddqu_si128((__m128i*)b);
 
 		vAf = _mm_castsi128_ps(vA);
 		vBf = _mm_castsi128_ps(vB);
@@ -758,13 +758,13 @@ namespace sel::utils {
 		__m128i vB, vResult;
 
 		// Row 0 of b
-		vB = _mm_load_si128((__m128i*)&b[0]);
+		vB = _mm_lddqu_si128((__m128i*)&b[0]);
 		vResult = _mm_mullo_epi32(
 			_mm_set1_epi32(a[0]),		// The register is filled with the first element of a
 			vB
 		);
 		// Row 1 of b
-		vB = _mm_load_si128((__m128i*)&b[4]);
+		vB = _mm_lddqu_si128((__m128i*)&b[4]);
 		vResult = _mm_add_epi32(vResult, _mm_mullo_epi32(
 			_mm_set1_epi32(a[1]),
 			vB
@@ -807,19 +807,19 @@ namespace sel::utils {
 		__m128i vB, vResult;
 
 		// Row 0 of b
-		vB = _mm_load_si128((__m128i*)&b[0]);
+		vB = _mm_lddqu_si128((__m128i*)&b[0]);
 		vResult = _mm_mullo_epi32(
 			_mm_set1_epi32(a[0]),
 			vB
 		);
 		// Row 1 of b
-		vB = _mm_load_si128((__m128i*)&b[4]);
+		vB = _mm_lddqu_si128((__m128i*)&b[4]);
 		vResult = _mm_add_epi32(vResult, _mm_mullo_epi32(
 			_mm_set1_epi32(a[1]),
 			vB
 		));
 		// Row 2 of b
-		vB = _mm_load_si128((__m128i*)&b[8]);
+		vB = _mm_lddqu_si128((__m128i*)&b[8]);
 		vResult = _mm_add_epi32(vResult, _mm_mullo_epi32(
 			_mm_set1_epi32(a[2]),
 			vB
@@ -868,25 +868,25 @@ namespace sel::utils {
 		__m128i vB, vResult;
 
 		// Row 0 of b
-		vB = _mm_load_si128((__m128i*)&b[0]);
+		vB = _mm_lddqu_si128((__m128i*)&b[0]);
 		vResult = _mm_mullo_epi32(
 			_mm_set1_epi32(a[0]),
 			vB
 		);
 		// Row 1 of b
-		vB = _mm_load_si128((__m128i*)&b[4]);
+		vB = _mm_lddqu_si128((__m128i*)&b[4]);
 		vResult = _mm_add_epi32(vResult, _mm_mullo_epi32(
 			_mm_set1_epi32(a[1]),
 			vB
 		));
 		// Row 2 of b
-		vB = _mm_load_si128((__m128i*)&b[8]);
+		vB = _mm_lddqu_si128((__m128i*)&b[8]);
 		vResult = _mm_add_epi32(vResult, _mm_mullo_epi32(
 			_mm_set1_epi32(a[2]),
 			vB
 		));
 		// Row 3 of b
-		vB = _mm_load_si128((__m128i*)&b[12]);
+		vB = _mm_lddqu_si128((__m128i*)&b[12]);
 		vResult = _mm_add_epi32(vResult, _mm_mullo_epi32(
 			_mm_set1_epi32(a[3]),
 			vB
