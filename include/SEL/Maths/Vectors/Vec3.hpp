@@ -143,6 +143,21 @@ namespace sel {
 			return *this;
 		}
 
+		/// @brief Normalizes the vector.
+		///
+		
+		/// 
+		void normalize()
+		{
+			T length = std::sqrt(x * x + y * y + z * z);
+			if (length != 0)
+			{
+				x /= length;
+				y /= length;
+				z /= length;
+			}
+		}
+
 	};
 
 	/// @brief Data structure that describes a vector with 3 integer coordinates.
@@ -298,8 +313,9 @@ namespace sel {
 	template <class T>
 	Vec3<T> normalize(const Vec3<T>& vec)
 	{
-		T length = std::sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
-		return { vec.x / length, vec.y / length, vec.z / length };
+		Vec3<T> copy = vec;
+		copy.normalize();
+		return copy;
 	}
 
 }

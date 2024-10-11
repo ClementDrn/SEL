@@ -23,7 +23,7 @@ namespace sel {
 		/// @param scalar is the value to set to the diagonal to.
 		/// 
 		Mat4x4(T scalar)
-			: m_data{ { scalar, 0, 0, 0 }, { 0, scalar, 0, 0 }, { 0, 0, scalar, 0 }, { 0, 0, 0, 0 } } {}
+			: m_data{ { scalar, 0, 0, 0 }, { 0, scalar, 0, 0 }, { 0, 0, scalar, 0 }, { 0, 0, 0, scalar } } {}
 
 		/// @brief Constructor.
 		///

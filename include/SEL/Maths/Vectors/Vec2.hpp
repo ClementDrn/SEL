@@ -121,6 +121,20 @@ namespace sel {
 			return *this;
 		}
 
+		/// @brief Normalizes the vector.
+		/// 
+		/// The vector is scaled to have a length of 1.
+		/// 
+		void normalize()
+		{
+			T length = std::sqrt(x * x + y * y);
+			if (length != 0)
+			{
+				x /= length;
+				y /= length;
+			}
+		}
+
 	};
 
 	/// @brief Data structure that describes a vector with 2 integer coordinates.
@@ -276,8 +290,9 @@ namespace sel {
 	template <class T>
 	Vec2<T> normalize(const Vec2<T>& vec)
 	{
-		T length = std::sqrt(vec.x * vec.x + vec.y * vec.y);
-		return { vec.x / length, vec.y / length };
+		Vec2<T> copy = vec;
+		copy.normalize();
+		return copy;
 	}
 
 }
