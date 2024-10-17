@@ -152,6 +152,40 @@ namespace sel {
 			return *this;
 		}
 
+		/// @brief Calculates the length of the vector.
+		/// 
+		/// @return The length of the vector.
+		/// 
+		T length() const
+		{
+			return std::sqrt(x * x + y * y + z * z + w * w);
+		}
+
+		/// @brief Calculates the squared length of the vector.
+		/// 
+		/// This function is faster that the length() function as it does not perform a square root operation.
+		/// 
+		/// @return The squared length of the vector.
+		/// 
+		T lengthSquared() const
+		{
+			return x * x + y * y + z * z + w * w;
+		}
+
+		/// @brief Normalizes the vector.
+		/// 
+		void normalize()
+		{
+			T len = length();
+			if (len != 0)
+			{
+				x /= len;
+				y /= len;
+				z /= len;
+				w /= len;
+			}
+		}
+
 	};
 
 	/// @brief Data structure that describes a vector with 4 integer coordinates.

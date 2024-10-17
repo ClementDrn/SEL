@@ -121,17 +121,37 @@ namespace sel {
 			return *this;
 		}
 
+		/// @brief Calculates the length of the vector.
+		/// 
+		/// @return The length of the vector.
+		/// 
+		T length() const
+		{
+			return std::sqrt(x * x + y * y);
+		}
+
+		/// @brief Calculates the squared length of the vector.
+		/// 
+		/// This function is faster that the length() function as it does not perform a square root operation.
+		/// 
+		/// @return The squared length of the vector.
+		/// 
+		T lengthSquared() const
+		{
+			return x * x + y * y;
+		}
+
 		/// @brief Normalizes the vector.
 		/// 
 		/// The vector is scaled to have a length of 1.
 		/// 
 		void normalize()
 		{
-			T length = std::sqrt(x * x + y * y);
-			if (length != 0)
+			T len = length();
+			if (len != 0)
 			{
-				x /= length;
-				y /= length;
+				x /= len;
+				y /= len;
 			}
 		}
 
@@ -278,6 +298,20 @@ namespace sel {
 	float dot(const Vec2<T>& u, const Vec2<T>& v)
 	{
 		return u.x * v.x + u.y * v.y;
+	}
+
+	/// @brief Calculates the cross product of 2D vectors
+	/// 
+	/// @tparam T is the type of the vectors' coordinates. 
+	/// @param u is the first 2D vector.
+	/// @param v is the second 2D vector.
+	/// 
+	/// @return The cross product of the two provided vectors.
+	/// 
+	template <class T>
+	float cross(const Vec2<T>& u, const Vec2<T>& v)
+	{
+		return u.x * v.y - u.y * v.x;
 	}
 
 	/// @brief Calculates the normalized version of a given vector.

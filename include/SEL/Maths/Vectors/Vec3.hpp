@@ -143,18 +143,36 @@ namespace sel {
 			return *this;
 		}
 
+		/// @brief Calculates the length of the vector.
+		/// 
+		/// @return The length of the vector.
+		/// 
+		T length() const
+		{
+			return std::sqrt(x * x + y * y + z * z);
+		}
+
+		/// @brief Calculates the squared length of the vector.
+		/// 
+		/// This function is faster that the length() function as it does not perform a square root operation.
+		/// 
+		/// @return The squared length of the vector.
+		/// 
+		T lengthSquared() const
+		{
+			return x * x + y * y + z * z;
+		}
+
 		/// @brief Normalizes the vector.
-		///
-		
 		/// 
 		void normalize()
 		{
-			T length = std::sqrt(x * x + y * y + z * z);
-			if (length != 0)
+			T len = length();
+			if (len != 0)
 			{
-				x /= length;
-				y /= length;
-				z /= length;
+				x /= len;
+				y /= len;
+				z /= len;
 			}
 		}
 
@@ -301,6 +319,20 @@ namespace sel {
 	float dot(const Vec3<T>& u, const Vec3<T>& v)
 	{
 		return u.x * v.x + u.y * v.y + u.z * v.z;
+	}
+
+	/// @brief Calculates the cross product of 3D vectors
+	/// 
+	/// @tparam T is the type of the vectors' coordinates. 
+	/// @param u is the first 3D vector.
+	/// @param v is the second 3D vector.
+	/// 
+	/// @return The cross product of the two provided vectors.
+	/// 
+	template <class T>
+	Vec3<T> cross(const Vec3<T>& u, const Vec3<T>& v)
+	{
+		return { u.y * v.z - u.z * v.y, u.z * v.x - u.x * v.z, u.x * v.y - u.y * v.x };
 	}
 
 	/// @brief Calculates the normalized version of a given vector.
