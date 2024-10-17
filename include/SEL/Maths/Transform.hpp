@@ -36,9 +36,100 @@ namespace sel {
 			auto& matrix = *this;
 
 			// 4th column
+			// NOTE: Assumes that matrix[3][3] = 1.0f
 			matrix[0][3] += vec.x;
 			matrix[1][3] += vec.y;
 			matrix[2][3] += vec.z;
+		}
+
+		/// @brief Rotates the transformation matrix.
+		///
+		/// @param axis is the axis of the rotation.
+		/// @param radians is the angle of the rotation in radians.
+		/// 
+		void rotate(const Vec3f& axis, float radians)
+		{
+			// https://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_and_angle
+
+			float c = std::cos(radians);
+			float s = std::sin(radians);
+
+			float negC = 1 - c;
+
+			// Normalize axis
+			Vec3f n = normalize(axis);
+
+			float xx = n.x * n.x;
+			float yy = n.y * n.y;
+			float zz = n.z * n.z;
+			float xy = n.x * n.y;
+			float yz = n.y * n.z;
+			float xz = n.x * n.z;
+
+			// Calculate matrix values
+			Mat4x4f rotMatrix;
+
+			// 1st row
+			rotMatrix[0][0] = xx * negC + c;
+			rotMatrix[0][1] = xy * negC - n.z * s;
+			rotMatrix[0][2] = xz * negC + n.y * s;
+			rotMatrix[0][3] = 0.0f;
+
+			// 2nd row
+			rotMatrix[1][0] = xy * negC + n.z * s;
+			rotMatrix[1][1] = yy * negC + c;
+			rotMatrix[1][2] = yz * negC - n.x * s;
+			rotMatrix[1][3] = 0.0f;
+
+			// 3rd row
+			rotMatrix[2][0] = xz * negC - n.y * s;
+			rotMatrix[2][1] = yz * negC + n.x * s;
+			rotMatrix[2][2] = zz * negC + c;
+			rotMatrix[2][3] = 0.0f;
+
+			// 4th row
+			rotMatrix[3][0] = 0.0f;
+			rotMatrix[3][1] = 0.0f;
+			rotMatrix[3][2] = 0.0f;
+			rotMatrix[3][3] = 1.0f;
+
+			// Multiply the rotation matrix with the current matrix
+			*this = rotMatrix * *this;
+		}
+
+		/// @brief Scales the transformation matrix.
+		///
+		/// @param vec is the scaling vector.
+		/// 
+		void scale(const Vec3f& vec)
+		{
+			// Scaling matrix:
+			// sx 0  0  0
+			// 0  sy 0  0
+			// 0  0  sz 0
+			// 0  0  0  1
+
+			auto& matrix = *this;
+
+			// 1st row
+			matrix[0][0] *= vec.x;
+			matrix[0][1] *= vec.x;
+			matrix[0][2] *= vec.x;
+			matrix[0][3] *= vec.x;
+
+			// 2nd row
+			matrix[1][0] *= vec.y;
+			matrix[1][1] *= vec.y;
+			matrix[1][2] *= vec.y;
+			matrix[1][3] *= vec.y;
+
+			// 3rd row
+			matrix[2][0] *= vec.z;
+			matrix[2][1] *= vec.z;
+			matrix[2][2] *= vec.z;
+			matrix[2][3] *= vec.z;
+
+			// Nothing to do on 4th row
 		}
 
 		/// @return the position vector of the transformation matrix.
@@ -55,13 +146,6 @@ namespace sel {
 	/// 
 	inline Mat4x4f translate(const Mat4x4f& mat, const Vec3f& vec)
 	{
-		// Translation matrix:
-		// 1  0  0  dx
-		// 0  1  0  dy
-		// 0  0  1  dz
-		// 0  0  0  1
-		
-		// result = Translation * mat
 		Transform result(mat);
 		result.translate(vec);
 		
@@ -78,59 +162,10 @@ namespace sel {
 	/// 
 	inline Mat4x4f rotate(const Mat4x4f& mat, const Vec3f& axis, float radians)
 	{
-		// Rotation matrix on X-axis:
-		//  1    0    0    0
-		//  0   cos  -sin  0
-		//  0   sin  cos   0
-		//  0    0    0    1
-		// 
-		// Rotation matrix on Y-axis:
-		// cos   0   sin   0
-		//  0    1    0    0
-		// -sin  0   cos   0
-		//  0    0    0    1
-		// 
-		// Rotation matrix on Z-axis:
-		// cos -sin   0    0
-		// sin  cos   0    0
-		//  0    0    1    0
-		//  0    0    0    1
+		Transform result(mat);
+		result.rotate(axis, radians);
 		
-		float c = std::cos(radians);
-		float s = std::sin(radians);
-
-		float temp = 1 - c;
-
-		// Normalize axis
-		Vec3f normalizedAxis = normalize(axis);
-
-		// Calculate cross products
-		Vec3f axisSquare(normalizedAxis.x * normalizedAxis.x, normalizedAxis.y * normalizedAxis.y, normalizedAxis.z * normalizedAxis.z);
-		Vec3f crossProd(normalizedAxis.x * normalizedAxis.y, normalizedAxis.y * normalizedAxis.z, normalizedAxis.z * normalizedAxis.x);
-
-		// Calculate matrix values
-		Mat4x4f rotMatrix;
-		rotMatrix[0][0] = c + axisSquare.x * temp;
-		rotMatrix[0][1] = crossProd.z * s + normalizedAxis.x * normalizedAxis.y * temp;
-		rotMatrix[0][2] = -crossProd.y * s + normalizedAxis.x * normalizedAxis.z * temp;
-		rotMatrix[0][3] = 0;
-
-		rotMatrix[1][0] = -crossProd.z * s + normalizedAxis.x * normalizedAxis.y * temp;
-		rotMatrix[1][1] = c + axisSquare.y * temp;
-		rotMatrix[1][2] = crossProd.x * s + normalizedAxis.y * normalizedAxis.z * temp;
-		rotMatrix[1][3] = 0;
-
-		rotMatrix[2][0] = crossProd.y * s + normalizedAxis.x * normalizedAxis.z * temp;
-		rotMatrix[2][1] = -crossProd.x * s + normalizedAxis.y * normalizedAxis.z * temp;
-		rotMatrix[2][2] = c + axisSquare.z * temp;
-		rotMatrix[2][3] = 0;
-
-		rotMatrix[3][0] = 0;
-		rotMatrix[3][1] = 0;
-		rotMatrix[3][2] = 0;
-		rotMatrix[3][3] = 1;
-
-		return rotMatrix * mat;
+		return result;
 	}
 
 	/// @brief Transforms a matrix by a scale.
@@ -142,39 +177,9 @@ namespace sel {
 	/// 
 	inline Mat4x4f scale(const Mat4x4f& mat, const Vec3f& vec)
 	{
-		// Scaling matrix:
-		// sx 0  0  0
-		// 0  sy 0  0
-		// 0  0  sz 0
-		// 0  0  0  1
-
-		// result = Scaling * mat
-		Mat4x4f result;
-
-		// 1st row
-		result[0][0] = mat[0][0] * vec.x;
-		result[0][1] = mat[0][1] * vec.x;
-		result[0][2] = mat[0][2] * vec.x;
-		result[0][3] = mat[0][3] * vec.x;
-
-		// 2nd row
-		result[1][0] = mat[1][0] * vec.y;
-		result[1][1] = mat[1][1] * vec.y;
-		result[1][2] = mat[1][2] * vec.y;
-		result[1][3] = mat[1][3] * vec.y;
-
-		// 3rd row
-		result[2][0] = mat[2][0] * vec.z;
-		result[2][1] = mat[2][1] * vec.z;
-		result[2][2] = mat[2][2] * vec.z;
-		result[2][3] = mat[2][3] * vec.z;
-
-		// 4th row
-		result[3][0] = mat[3][0];
-		result[3][1] = mat[3][1];
-		result[3][2] = mat[3][2];
-		result[3][3] = mat[3][3];
-
+		Transform result(mat);
+		result.scale(vec);
+		
 		return result;
 	}
 
