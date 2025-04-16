@@ -127,7 +127,7 @@ namespace sel {
 		/// 
 		/// @return A copy of the vector with updated coordinates.
 		/// 
-		Vec2& operator-() const
+		Vec2 operator-() const
 		{
 			Vec2 v;
 			v.x = -x;
