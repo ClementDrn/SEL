@@ -8,6 +8,9 @@
 
 namespace sel::utils {
 
+	// Public matrices require only scalar alignment, including in arrays.
+	// Use unaligned vector loads/stores for matrix data and local buffers.
+
 	// --- 1x2 result ----------------------------------------------------------
 
     inline void mulMatrix_1x2_2x2(float* dst, const float* a, const float* b)
@@ -17,7 +20,7 @@ namespace sel::utils {
 
         vResult = _mm_mul_ps(
             _mm_set_ps(a[1], a[1], a[0], a[0]),
-            _mm_load_ps(b)      // 3, 2, 1, 0
+            _mm_loadu_ps(b)      // 3, 2, 1, 0
         );
 		
 		// Add 0 & 2 and 1 & 3
@@ -28,7 +31,7 @@ namespace sel::utils {
 		);
 		
         float tmp[4];
-        _mm_store_ps(tmp, vResult);
+        _mm_storeu_ps(tmp, vResult);
         std::memcpy(dst, tmp, sizeof(float) * 2);
     }
 
@@ -41,7 +44,7 @@ namespace sel::utils {
 
         vResult1 = _mm_mul_ps(
             _mm_set_ps(a[1], a[1], a[0], a[0]),
-            _mm_load_ps(b)      // 3, 2, 1, 0
+            _mm_loadu_ps(b)      // 3, 2, 1, 0
         );
 
         // Add 0 & 2 and 1 & 3
@@ -64,7 +67,7 @@ namespace sel::utils {
 		);
 
 		float tmp[4];
-        _mm_store_ps(tmp, vResult);
+        _mm_storeu_ps(tmp, vResult);
         std::memcpy(dst, tmp, sizeof(float) * 2);
     }
 
@@ -77,12 +80,12 @@ namespace sel::utils {
 
         vResult1 = _mm_mul_ps(
             _mm_set_ps(a[1], a[1], a[0], a[0]),
-            _mm_load_ps(b)      // 3, 2, 1, 0
+            _mm_loadu_ps(b)      // 3, 2, 1, 0
         );
 
         vResult2 = _mm_mul_ps(
             _mm_set_ps(a[3], a[3], a[2], a[2]),
-            _mm_load_ps(&b[4])      // 3, 2, 1, 0
+            _mm_loadu_ps(&b[4])      // 3, 2, 1, 0
         );
 
         vResult = _mm_add_ps(
@@ -98,7 +101,7 @@ namespace sel::utils {
         );
 
         float tmp[4];
-        _mm_store_ps(tmp, vResult);
+        _mm_storeu_ps(tmp, vResult);
         std::memcpy(dst, tmp, sizeof(float) * 2);
 	}
 
@@ -110,8 +113,8 @@ namespace sel::utils {
         // Result is 2x2
 		__m128 vA, vB, vResult;
 
-		vA = _mm_load_ps(a);
-		vB = _mm_load_ps(b);
+		vA = _mm_loadu_ps(a);
+		vB = _mm_loadu_ps(b);
 
 		vResult = _mm_mul_ps(
 			_mm_shuffle_ps(vA, vA, _MM_SHUFFLE(2, 2, 0, 0)),
@@ -123,7 +126,7 @@ namespace sel::utils {
 			_mm_shuffle_ps(vB, vB, _MM_SHUFFLE(3, 2, 3, 2)))
 		);
 		
-		_mm_store_ps(dst, vResult);
+		_mm_storeu_ps(dst, vResult);
 	}
 
 
@@ -222,7 +225,8 @@ namespace sel::utils {
         ));
 
         float tmp[4];
-        _mm_storer_ps(tmp, vResult);
+        // Reverse lanes without imposing alignment on the temporary.
+        _mm_storeu_ps(tmp, _mm_shuffle_ps(vResult, vResult, _MM_SHUFFLE(0, 1, 2, 3)));
         std::memcpy(dst, tmp, sizeof(float) * 3);
     }
 
@@ -252,7 +256,8 @@ namespace sel::utils {
         ));
 		
 		float tmp[4];
-		_mm_storer_ps(tmp, vResult);
+		// Reverse lanes without imposing alignment on the temporary.
+		_mm_storeu_ps(tmp, _mm_shuffle_ps(vResult, vResult, _MM_SHUFFLE(0, 1, 2, 3)));
 		std::memcpy(dst, tmp, sizeof(float) * 3);
     }
 
@@ -288,7 +293,8 @@ namespace sel::utils {
 		));
 
 		float tmp[4];
-		_mm_storer_ps(tmp, vResult);
+		// Reverse lanes without imposing alignment on the temporary.
+		_mm_storeu_ps(tmp, _mm_shuffle_ps(vResult, vResult, _MM_SHUFFLE(0, 1, 2, 3)));
 		std::memcpy(dst, tmp, sizeof(float) * 3);
     }
 
@@ -386,19 +392,19 @@ namespace sel::utils {
 		__m128 vB, vResult;
 
         // Row 0 of b
-        vB = _mm_load_ps(&b[0]);
+        vB = _mm_loadu_ps(&b[0]);
         vResult = _mm_mul_ps(
 			_mm_load_ps1(&a[0]),    // The register is filled with the first element of a
             vB
         );
         // Row 1 of b
-        vB = _mm_load_ps(&b[4]);
+        vB = _mm_loadu_ps(&b[4]);
         vResult = _mm_add_ps(vResult, _mm_mul_ps(
             _mm_load_ps1(&a[1]),
             vB
         ));
 
-		_mm_store_ps(dst, vResult);
+		_mm_storeu_ps(dst, vResult);
     }
 
 
@@ -408,25 +414,25 @@ namespace sel::utils {
         __m128 vB, vResult;
 
         // Row 0 of b
-        vB = _mm_load_ps(&b[0]);
+        vB = _mm_loadu_ps(&b[0]);
         vResult = _mm_mul_ps(
             _mm_load_ps1(&a[0]),
             vB
         );
         // Row 1 of b
-        vB = _mm_load_ps(&b[4]);
+        vB = _mm_loadu_ps(&b[4]);
         vResult = _mm_add_ps(vResult, _mm_mul_ps(
             _mm_load_ps1(&a[1]),
             vB
         ));
         // Row 2 of b
-        vB = _mm_load_ps(&b[8]);
+        vB = _mm_loadu_ps(&b[8]);
         vResult = _mm_add_ps(vResult, _mm_mul_ps(
             _mm_load_ps1(&a[2]),
             vB
         ));
 
-        _mm_store_ps(dst, vResult);
+        _mm_storeu_ps(dst, vResult);
     }
 
 
@@ -436,31 +442,31 @@ namespace sel::utils {
 		__m128 vB, vResult;
 		
 		// Row 0 of b
-		vB = _mm_load_ps(&b[0]);
+		vB = _mm_loadu_ps(&b[0]);
         vResult = _mm_mul_ps(
             _mm_load_ps1(&a[0]),
             vB
         );
         // Row 1 of b
-        vB = _mm_load_ps(&b[4]);
+        vB = _mm_loadu_ps(&b[4]);
         vResult = _mm_add_ps(vResult, _mm_mul_ps(
             _mm_load_ps1(&a[1]),
             vB
         ));
         // Row 2 of b
-        vB = _mm_load_ps(&b[8]);
+        vB = _mm_loadu_ps(&b[8]);
         vResult = _mm_add_ps(vResult, _mm_mul_ps(
             _mm_load_ps1(&a[2]),
             vB
         ));
         // Row 3 of b
-        vB = _mm_load_ps(&b[12]);
+        vB = _mm_loadu_ps(&b[12]);
         vResult = _mm_add_ps(vResult, _mm_mul_ps(
             _mm_load_ps1(&a[3]),
             vB
         ));
 		
-        _mm_store_ps(dst, vResult);
+        _mm_storeu_ps(dst, vResult);
     }
 
 

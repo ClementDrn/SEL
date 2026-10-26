@@ -8,6 +8,9 @@
 
 namespace sel::utils {
 
+	// Matrix objects and temporary scalar arrays need not be 16-byte aligned.
+	// Integer loads already accept unaligned addresses; stores must do so too.
+
 	// --- 1x2 result ----------------------------------------------------------
 
 
@@ -33,7 +36,7 @@ namespace sel::utils {
 		);
 
 		int tmp[4];
-		_mm_store_si128((__m128i*)tmp, vResult);
+		_mm_storeu_si128((__m128i*)tmp, vResult);
 		std::memcpy(dst, tmp, sizeof(int) * 2);
     }
 
@@ -72,7 +75,7 @@ namespace sel::utils {
 		);
 
         int tmp[4];
-		_mm_store_si128((__m128i*)tmp, vResult);
+		_mm_storeu_si128((__m128i*)tmp, vResult);
 		std::memcpy(dst, tmp, sizeof(int) * 2);
     }
 
@@ -109,7 +112,7 @@ namespace sel::utils {
 		);
 
 		int tmp[4];
-		_mm_store_si128((__m128i*)tmp, vResult);
+		_mm_storeu_si128((__m128i*)tmp, vResult);
 		std::memcpy(dst, tmp, sizeof(int) * 2);
 	}
 
@@ -139,7 +142,7 @@ namespace sel::utils {
 			_mm_castps_si128(_mm_shuffle_ps(vBf, vBf, _MM_SHUFFLE(3, 2, 3, 2))))
 		);
 
-		_mm_store_si128((__m128i*)dst, vResult);
+		_mm_storeu_si128((__m128i*)dst, vResult);
 	}
 
 
@@ -241,7 +244,7 @@ namespace sel::utils {
 		));
 
 		int tmp[4];
-		_mm_store_si128((__m128i*)tmp, vResult);
+		_mm_storeu_si128((__m128i*)tmp, vResult);
 		std::memcpy(dst, tmp, sizeof(int) * 3);
     }
 
@@ -271,7 +274,7 @@ namespace sel::utils {
 		));
 
 		int tmp[4];
-		_mm_store_si128((__m128i*)tmp, vResult);
+		_mm_storeu_si128((__m128i*)tmp, vResult);
 		std::memcpy(dst, tmp, sizeof(int) * 3);
 	}
 
@@ -307,7 +310,7 @@ namespace sel::utils {
 		));
 
 		int tmp[4];
-		_mm_store_si128((__m128i*)tmp, vResult);
+		_mm_storeu_si128((__m128i*)tmp, vResult);
 		std::memcpy(dst, tmp, sizeof(int) * 3);
 	}
 
@@ -421,7 +424,7 @@ namespace sel::utils {
 			vB
 		));
 
-		_mm_store_si128((__m128i*)dst, vResult);
+		_mm_storeu_si128((__m128i*)dst, vResult);
 	}
 
 
@@ -449,7 +452,7 @@ namespace sel::utils {
 			vB
 		));
 
-		_mm_store_si128((__m128i*)dst, vResult);
+		_mm_storeu_si128((__m128i*)dst, vResult);
     }
 
 
@@ -483,7 +486,7 @@ namespace sel::utils {
 			vB
 		));
 
-		_mm_store_si128((__m128i*)dst, vResult);
+		_mm_storeu_si128((__m128i*)dst, vResult);
 	}
 
 
