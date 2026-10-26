@@ -2,7 +2,7 @@
 #pragma once
 
 #include <immintrin.h>
-#include <vcruntime_string.h>
+#include <cstring>
 
 
 namespace sel::utils {
@@ -28,7 +28,7 @@ namespace sel::utils {
 		
         float tmp[4];
         _mm_store_ps(tmp, vResult);
-        memcpy(dst, tmp, sizeof(float) * 2);
+        std::memcpy(dst, tmp, sizeof(float) * 2);
     }
 
     inline void mulMatrix_1x2_2x2(int* dst, const int* a, const int* b)
@@ -54,7 +54,7 @@ namespace sel::utils {
 
 		int tmp[4];
 		_mm_store_si128((__m128i*)tmp, vResult);
-		memcpy(dst, tmp, sizeof(int) * 2);
+		std::memcpy(dst, tmp, sizeof(int) * 2);
     }
 
 
@@ -90,7 +90,7 @@ namespace sel::utils {
 
 		float tmp[4];
         _mm_store_ps(tmp, vResult);
-        memcpy(dst, tmp, sizeof(float) * 2);
+        std::memcpy(dst, tmp, sizeof(float) * 2);
     }
 
     inline void mulMatrix_1x3_3x2(int* dst, const int* a, const int* b)
@@ -128,7 +128,7 @@ namespace sel::utils {
 
         int tmp[4];
 		_mm_store_si128((__m128i*)tmp, vResult);
-		memcpy(dst, tmp, sizeof(int) * 2);
+		std::memcpy(dst, tmp, sizeof(int) * 2);
     }
 
 
@@ -162,7 +162,7 @@ namespace sel::utils {
 
         float tmp[4];
         _mm_store_ps(tmp, vResult);
-        memcpy(dst, tmp, sizeof(float) * 2);
+        std::memcpy(dst, tmp, sizeof(float) * 2);
 	}
 
 	inline void mulMatrix_1x4_4x2(int* dst, const int* a, const int* b)
@@ -198,7 +198,7 @@ namespace sel::utils {
 
 		int tmp[4];
 		_mm_store_si128((__m128i*)tmp, vResult);
-		memcpy(dst, tmp, sizeof(int) * 2);
+		std::memcpy(dst, tmp, sizeof(int) * 2);
 	}
 
 
@@ -413,7 +413,7 @@ namespace sel::utils {
 
         float tmp[4];
         _mm_storer_ps(tmp, vResult);
-        memcpy(dst, tmp, sizeof(float) * 3);
+        std::memcpy(dst, tmp, sizeof(float) * 3);
     }
 
     inline void mulMatrix_1x2_2x3(int* dst, const int* a, const int* b)
@@ -436,7 +436,7 @@ namespace sel::utils {
 
 		int tmp[4];
 		_mm_store_si128((__m128i*)tmp, vResult);
-		memcpy(dst, tmp, sizeof(int) * 3);
+		std::memcpy(dst, tmp, sizeof(int) * 3);
     }
 
 
@@ -466,7 +466,7 @@ namespace sel::utils {
 		
 		float tmp[4];
 		_mm_storer_ps(tmp, vResult);
-		memcpy(dst, tmp, sizeof(float) * 3);
+		std::memcpy(dst, tmp, sizeof(float) * 3);
     }
 
     inline void mulMatrix_1x3_3x3(int* dst, const int* a, const int* b)
@@ -495,7 +495,7 @@ namespace sel::utils {
 
 		int tmp[4];
 		_mm_store_si128((__m128i*)tmp, vResult);
-		memcpy(dst, tmp, sizeof(int) * 3);
+		std::memcpy(dst, tmp, sizeof(int) * 3);
 	}
 
 	
@@ -531,7 +531,7 @@ namespace sel::utils {
 
 		float tmp[4];
 		_mm_storer_ps(tmp, vResult);
-		memcpy(dst, tmp, sizeof(float) * 3);
+		std::memcpy(dst, tmp, sizeof(float) * 3);
     }
 
     inline void mulMatrix_1x4_4x3(int* dst, const int* a, const int* b)
@@ -566,7 +566,7 @@ namespace sel::utils {
 
 		int tmp[4];
 		_mm_store_si128((__m128i*)tmp, vResult);
-		memcpy(dst, tmp, sizeof(int) * 3);
+		std::memcpy(dst, tmp, sizeof(int) * 3);
 	}
 
 
