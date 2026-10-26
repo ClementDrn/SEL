@@ -11,7 +11,8 @@ import re
 def multiply(left, right, rows, inner, columns):
     """Compute row-by-column products without using SEL or floating-point math."""
     return [sum((left[row * inner + k] * right[k * columns + column]
-                 for k in range(inner)), Fraction(0))
+                 for k in range(inner)
+                 if left[row * inner + k] and right[k * columns + column]), Fraction(0))
             for row in range(rows) for column in range(columns)]
 
 
@@ -23,6 +24,8 @@ def verified_product(left, right, rows, inner, columns):
     for k in range(inner):
         for column in range(columns):
             for row in range(rows):
+                if not left[row * inner + k] or not right[k * columns + column]:
+                    continue
                 verified[row * columns + column] += (
                     left[row * inner + k] * right[k * columns + column])
     if result != verified:
@@ -48,15 +51,35 @@ def fixtures(rows, inner, columns, unsigned):
                     for row in range(inner) for column in range(columns)]
         yield "identity right", left, identity
 
-    # Isolate each output location and each contributing inner coordinate.
-    for row in range(rows):
-        for column in range(columns):
-            for k in range(inner):
-                basis_left = [Fraction(0)] * len(left)
-                basis_right = [Fraction(0)] * len(right)
-                basis_left[row * inner + k] = Fraction(2)
-                basis_right[k * columns + column] = Fraction(3)
-                yield f"basis {row},{k},{column}", basis_left, basis_right
+    if max(rows, inner, columns) <= 4:
+        # Isolate each output location and each contributing inner coordinate.
+        for row in range(rows):
+            for column in range(columns):
+                for k in range(inner):
+                    basis_left = [Fraction(0)] * len(left)
+                    basis_right = [Fraction(0)] * len(right)
+                    basis_left[row * inner + k] = Fraction(2)
+                    basis_right[k * columns + column] = Fraction(3)
+                    yield f"basis {row},{k},{column}", basis_left, basis_right
+    else:
+        # One outer product per inner coordinate covers every output location.
+        # Distinct row and column weights reveal swapped or repeated SIMD lanes,
+        # without emitting rows * inner * columns full-size sparse fixtures.
+        for k in range(inner):
+            basis_left = [Fraction(0)] * len(left)
+            basis_right = [Fraction(0)] * len(right)
+            for row in range(rows):
+                basis_left[row * inner + k] = Fraction(row + 1)
+            for column in range(columns):
+                basis_right[k * columns + column] = Fraction(column + 2)
+            yield f"basis inner {k}", basis_left, basis_right
+
+        # A permutation moves complete rows or columns across SIMD groups.
+        if rows == inner == columns:
+            permutation = [Fraction(column == (row + 1) % inner)
+                           for row in range(rows) for column in range(columns)]
+            yield "permutation left", permutation, right
+            yield "permutation right", left, permutation
 
     if not unsigned:
         yield "cancellation", [Fraction(1)] * len(left), [
@@ -73,7 +96,9 @@ def fixtures(rows, inner, columns, unsigned):
 
 
 def cpp_values(values):
-    return "{" + ", ".join(f"{value.numerator}.0L / {value.denominator}.0L"
+    # Integer literals are exact and keep large generated fixtures compact.
+    return "{" + ", ".join(str(value.numerator) if value.denominator == 1
+                            else f"{value.numerator}.0L / {value.denominator}.0L"
                             for value in values) + "}"
 
 
@@ -114,6 +139,12 @@ def generate(shapes):
             lines += ['}', '']
     if combinations == 0:
         raise ValueError("No compatible matrix shapes found")
+    for rows, columns in sorted(shapes):
+        if rows == columns and rows > 4:
+            lines += [f'TEMPLATE_TEST_CASE("{rows}x{rows} matrix operations", "[matrix][operations]",',
+                      '                   int, unsigned int, float, double)', '{',
+                      f'    matrixTests::checkSquareOperations<TestType, sel::Mat{rows}x{rows}<TestType>, {rows}>();',
+                      '}', '']
     return '\n'.join(lines), combinations
 
 

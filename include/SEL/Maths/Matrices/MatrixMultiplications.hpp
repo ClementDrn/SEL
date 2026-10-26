@@ -1,5 +1,11 @@
 #pragma once
 
+#include <type_traits>
+
+#include "Mat8x8.hpp"
+#include "Mat16x16.hpp"
+#include "Mat32x32.hpp"
+
 #include "Mat4x4.hpp"
 #include "Mat4x3.hpp"
 #include "Mat4x2.hpp"
@@ -1287,5 +1293,130 @@ namespace sel {
 		return result;
 	}
 
-}
 
+	// --- 8x8 result ----------------------------------------------------------
+
+	/// @brief Overload of * binary arithmetic operator.
+	///
+	/// @tparam T is the type of the matrices' values.
+	/// @param lhs is the first matrix.
+	/// @param rhs is the second matrix.
+	///
+	/// @return The matrix resulted by the multiplication of the two provided matrices.
+	///
+	template <class T>
+	inline Mat8x8<T> operator*(const Mat8x8<T>& lhs, const Mat8x8<T>& rhs)
+	{
+		Mat8x8<T> result;
+
+#ifdef SEL_INTRINSIC_MATRIX_MUL
+		// Intrinsic multiplication is only available for float and int matrices.
+		if constexpr (std::is_same_v<T, float> || std::is_same_v<T, int>)
+		{
+			utils::mulMatrix_8x8_8x8(result.m_data, lhs.m_data, rhs.m_data);
+			return result;
+		}
+#endif
+
+		// Normal multiplication
+		// Calculate each row by accumulating rows of rhs in their original order.
+		for (std::size_t row = 0; row < 8; ++row)
+		{
+			for (std::size_t column = 0; column < 8; ++column)
+			{
+				result[row][column] = lhs[row][0] * rhs[0][column];
+				for (std::size_t inner = 1; inner < 8; ++inner)
+				{
+					result[row][column] += lhs[row][inner] * rhs[inner][column];
+				}
+			}
+		}
+
+		return result;
+	}
+
+
+	// --- 16x16 result ----------------------------------------------------------
+
+	/// @brief Overload of * binary arithmetic operator.
+	///
+	/// @tparam T is the type of the matrices' values.
+	/// @param lhs is the first matrix.
+	/// @param rhs is the second matrix.
+	///
+	/// @return The matrix resulted by the multiplication of the two provided matrices.
+	///
+	template <class T>
+	inline Mat16x16<T> operator*(const Mat16x16<T>& lhs, const Mat16x16<T>& rhs)
+	{
+		Mat16x16<T> result;
+
+#ifdef SEL_INTRINSIC_MATRIX_MUL
+		// Intrinsic multiplication is only available for float and int matrices.
+		if constexpr (std::is_same_v<T, float> || std::is_same_v<T, int>)
+		{
+			utils::mulMatrix_16x16_16x16(result.m_data, lhs.m_data, rhs.m_data);
+			return result;
+		}
+#endif
+
+		// Normal multiplication
+		// Calculate each row by accumulating rows of rhs in their original order.
+		for (std::size_t row = 0; row < 16; ++row)
+		{
+			for (std::size_t column = 0; column < 16; ++column)
+			{
+				result[row][column] = lhs[row][0] * rhs[0][column];
+				for (std::size_t inner = 1; inner < 16; ++inner)
+				{
+					result[row][column] += lhs[row][inner] * rhs[inner][column];
+				}
+			}
+		}
+
+		return result;
+	}
+
+
+	// --- 32x32 result ----------------------------------------------------------
+
+	/// @brief Overload of * binary arithmetic operator.
+	///
+	/// @tparam T is the type of the matrices' values.
+	/// @param lhs is the first matrix.
+	/// @param rhs is the second matrix.
+	///
+	/// @return The matrix resulted by the multiplication of the two provided matrices.
+	///
+	template <class T>
+	inline Mat32x32<T> operator*(const Mat32x32<T>& lhs, const Mat32x32<T>& rhs)
+	{
+		Mat32x32<T> result;
+
+#ifdef SEL_INTRINSIC_MATRIX_MUL
+		// Intrinsic multiplication is only available for float and int matrices.
+		if constexpr (std::is_same_v<T, float> || std::is_same_v<T, int>)
+		{
+			utils::mulMatrix_32x32_32x32(result.m_data, lhs.m_data, rhs.m_data);
+			return result;
+		}
+#endif
+
+		// Normal multiplication
+		// Calculate each row by accumulating rows of rhs in their original order.
+		for (std::size_t row = 0; row < 32; ++row)
+		{
+			for (std::size_t column = 0; column < 32; ++column)
+			{
+				result[row][column] = lhs[row][0] * rhs[0][column];
+				for (std::size_t inner = 1; inner < 32; ++inner)
+				{
+					result[row][column] += lhs[row][inner] * rhs[inner][column];
+				}
+			}
+		}
+
+		return result;
+	}
+
+}

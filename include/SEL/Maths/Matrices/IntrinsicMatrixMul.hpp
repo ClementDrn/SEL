@@ -3,6 +3,7 @@
 
 #include <immintrin.h>
 #include <cstring>
+#include <cstddef>
 
 
 namespace sel::utils {
@@ -1068,6 +1069,150 @@ namespace sel::utils {
 		mulMatrix_1x4_4x4(&dst[4], &a[4], b);
 		mulMatrix_1x4_4x4(&dst[8], &a[8], b);
 		mulMatrix_1x4_4x4(&dst[12], &a[12], b);
+	}
+
+
+	// --- Large square results ------------------------------------------------
+
+	/// @brief Multiply square matrices in groups of four columns.
+	///
+	/// @tparam Size is the number of rows and columns, divisible by four.
+	/// @param dst is the destination matrix, distinct from both inputs.
+	/// @param a is the first matrix.
+	/// @param b is the second matrix.
+	///
+	template <std::size_t Size>
+	inline void mulMatrixSquare(float (&dst)[Size][Size], const float (&a)[Size][Size], const float (&b)[Size][Size])
+	{
+		static_assert(Size % 4 == 0, "SIMD multiplication requires groups of four columns");
+
+		// Broadcast one value of a and multiply four adjacent values of b.
+		// Unaligned loads and stores also support matrices without SIMD alignment.
+		for (std::size_t row = 0; row < Size; ++row)
+		{
+			for (std::size_t column = 0; column < Size; column += 4)
+			{
+				__m128 vResult = _mm_mul_ps(_mm_set1_ps(a[row][0]), _mm_loadu_ps(&b[0][column]));
+				for (std::size_t inner = 1; inner < Size; ++inner)
+				{
+					vResult = _mm_add_ps(vResult, _mm_mul_ps(
+						_mm_set1_ps(a[row][inner]), _mm_loadu_ps(&b[inner][column])
+					));
+				}
+
+				_mm_storeu_ps(&dst[row][column], vResult);
+			}
+		}
+	}
+
+	/// @brief Multiply integer square matrices in groups of four columns.
+	///
+	/// @tparam Size is the number of rows and columns, divisible by four.
+	/// @param dst is the destination matrix, distinct from both inputs.
+	/// @param a is the first matrix.
+	/// @param b is the second matrix.
+	///
+	template <std::size_t Size>
+	inline void mulMatrixSquare(int (&dst)[Size][Size], const int (&a)[Size][Size], const int (&b)[Size][Size])
+	{
+		static_assert(Size % 4 == 0, "SIMD multiplication requires groups of four columns");
+
+		// Accumulate four integer products at a time using the existing SSE4.1 backend.
+		// Matrix rows need no additional alignment for these loads and stores.
+		for (std::size_t row = 0; row < Size; ++row)
+		{
+			for (std::size_t column = 0; column < Size; column += 4)
+			{
+				__m128i vResult = _mm_mullo_epi32(_mm_set1_epi32(a[row][0]),
+					_mm_loadu_si128((const __m128i*)&b[0][column]));
+				for (std::size_t inner = 1; inner < Size; ++inner)
+				{
+					vResult = _mm_add_epi32(vResult, _mm_mullo_epi32(
+						_mm_set1_epi32(a[row][inner]), _mm_loadu_si128((const __m128i*)&b[inner][column])
+					));
+				}
+
+				_mm_storeu_si128((__m128i*)&dst[row][column], vResult);
+			}
+		}
+	}
+
+
+	/// @brief Multiply two 8x8 float matrices using SIMD instructions.
+	///
+	/// @param dst is the destination matrix, distinct from both inputs.
+	/// @param a is the first matrix.
+	/// @param b is the second matrix.
+	///
+	inline void mulMatrix_8x8_8x8(float (&dst)[8][8], const float (&a)[8][8], const float (&b)[8][8])
+	{
+		// Calculate each row in groups of four columns.
+		mulMatrixSquare(dst, a, b);
+	}
+
+
+	/// @brief Multiply two 8x8 int matrices using SIMD instructions.
+	///
+	/// @param dst is the destination matrix, distinct from both inputs.
+	/// @param a is the first matrix.
+	/// @param b is the second matrix.
+	///
+	inline void mulMatrix_8x8_8x8(int (&dst)[8][8], const int (&a)[8][8], const int (&b)[8][8])
+	{
+		// Calculate each row in groups of four columns.
+		mulMatrixSquare(dst, a, b);
+	}
+
+
+	/// @brief Multiply two 16x16 float matrices using SIMD instructions.
+	///
+	/// @param dst is the destination matrix, distinct from both inputs.
+	/// @param a is the first matrix.
+	/// @param b is the second matrix.
+	///
+	inline void mulMatrix_16x16_16x16(float (&dst)[16][16], const float (&a)[16][16], const float (&b)[16][16])
+	{
+		// Calculate each row in groups of four columns.
+		mulMatrixSquare(dst, a, b);
+	}
+
+
+	/// @brief Multiply two 16x16 int matrices using SIMD instructions.
+	///
+	/// @param dst is the destination matrix, distinct from both inputs.
+	/// @param a is the first matrix.
+	/// @param b is the second matrix.
+	///
+	inline void mulMatrix_16x16_16x16(int (&dst)[16][16], const int (&a)[16][16], const int (&b)[16][16])
+	{
+		// Calculate each row in groups of four columns.
+		mulMatrixSquare(dst, a, b);
+	}
+
+
+	/// @brief Multiply two 32x32 float matrices using SIMD instructions.
+	///
+	/// @param dst is the destination matrix, distinct from both inputs.
+	/// @param a is the first matrix.
+	/// @param b is the second matrix.
+	///
+	inline void mulMatrix_32x32_32x32(float (&dst)[32][32], const float (&a)[32][32], const float (&b)[32][32])
+	{
+		// Calculate each row in groups of four columns.
+		mulMatrixSquare(dst, a, b);
+	}
+
+
+	/// @brief Multiply two 32x32 int matrices using SIMD instructions.
+	///
+	/// @param dst is the destination matrix, distinct from both inputs.
+	/// @param a is the first matrix.
+	/// @param b is the second matrix.
+	///
+	inline void mulMatrix_32x32_32x32(int (&dst)[32][32], const int (&a)[32][32], const int (&b)[32][32])
+	{
+		// Calculate each row in groups of four columns.
+		mulMatrixSquare(dst, a, b);
 	}
 
 }

@@ -12,4 +12,8 @@
 #include "SEL/Maths/Matrices/Mat4x3.hpp"
 #include "SEL/Maths/Matrices/Mat4x4.hpp"
 
+#include "SEL/Maths/Matrices/Mat8x8.hpp"
+#include "SEL/Maths/Matrices/Mat16x16.hpp"
+#include "SEL/Maths/Matrices/Mat32x32.hpp"
+
 #include "SEL/Maths/Matrices/MatrixMultiplications.hpp"
