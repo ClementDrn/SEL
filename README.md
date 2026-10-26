@@ -33,6 +33,19 @@ You can now use the library by including `SEL/sel.hpp` or a more specific file l
 ```
 
 
+## Tests
+
+Requires a C++17 compiler, CMake 3.21+, Python 3.6+, Git, and a build tool;
+CMake downloads Catch2 on the first run.
+
+Configure, build, and run tests with the following commands:
+```shell
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+cmake --build build --config Debug --parallel
+ctest --test-dir build -C Debug --output-on-failure
+```
+
+
 ## License
 
 This library is licensed under the [MIT](./LICENSE) license.

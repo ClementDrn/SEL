@@ -9,7 +9,7 @@ scripts/
 premake5.lua
 
 # Tests
-tests/
+/build/
 bin/
 obj/
 
@@ -19,3 +19,7 @@ latex/*
 
 # Packages
 *.zip
+
+# Other hidden files
+.*
+!.gitignore
