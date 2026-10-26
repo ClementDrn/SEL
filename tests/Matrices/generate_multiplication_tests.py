@@ -102,6 +102,30 @@ def cpp_values(values):
                             for value in values) + "}"
 
 
+def wrap_int8(value):
+    """Keep the low byte and interpret it as a signed value, without saturation."""
+    assert value.denominator == 1
+    return Fraction((value.numerator + 128) % 256 - 128)
+
+
+def int8_fixtures(rows, inner, columns):
+    # Narrow inputs before computing expectations, rather than narrowing a result
+    # calculated from inputs that cannot be represented by the tested matrix.
+    for label, left, right in fixtures(rows, inner, columns, False):
+        if label != 'fractional':
+            yield label, list(map(wrap_int8, left)), list(map(wrap_int8, right))
+
+    # Exercise sign extension, both signed-byte limits, and sums that overflow
+    # sixteen bits in larger matrices. The reference still accumulates exactly.
+    for label, a, b in [('minimum squared', -128, -128),
+                        ('maximum squared', 127, 127),
+                        ('mixed limits', -128, 127)]:
+        yield label, [Fraction(a)] * (rows * inner), [Fraction(b)] * (inner * columns)
+    yield 'alternating limits', [Fraction(-128 if i % 2 else 127)
+                                for i in range(rows * inner)], [
+        Fraction(127 if i % 3 else -128) for i in range(inner * columns)]
+
+
 def generate(shapes):
     lines = ['// Generated file. Edit generate_multiplication_tests.py instead.',
              '#include "MultiplicationChecks.hpp"',
@@ -114,12 +138,18 @@ def generate(shapes):
             combinations += 1
             name = f"{rows}x{inner} * {inner}x{columns} -> {rows}x{columns}"
             lines += [f'TEMPLATE_TEST_CASE("{name}", "[matrix][multiplication]",',
-                      '                   int, unsigned int, float, double)', '{']
-            for unsigned in (True, False):
-                condition = 'if constexpr (std::is_unsigned_v<TestType>)' if unsigned else 'else'
+                      '                   std::int8_t, int, unsigned int, float, double)', '{']
+            for group in ('int8', 'unsigned', 'signed'):
+                condition = {'int8': 'if constexpr (std::is_same_v<TestType, std::int8_t>)',
+                             'unsigned': 'else if constexpr (std::is_unsigned_v<TestType>)',
+                             'signed': 'else'}[group]
                 lines += [f'    {condition}', '    {']
-                for label, left, right in fixtures(rows, inner, columns, unsigned):
+                cases = (int8_fixtures(rows, inner, columns) if group == 'int8'
+                         else fixtures(rows, inner, columns, group == 'unsigned'))
+                for label, left, right in cases:
                     expected = verified_product(left, right, rows, inner, columns)
+                    if group == 'int8':
+                        expected = list(map(wrap_int8, expected))
                     # Fractional cases apply only to floating-point instantiations.
                     indent = '        '
                     if label == 'fractional':
@@ -142,7 +172,7 @@ def generate(shapes):
     for rows, columns in sorted(shapes):
         if rows == columns and rows > 4:
             lines += [f'TEMPLATE_TEST_CASE("{rows}x{rows} matrix operations", "[matrix][operations]",',
-                      '                   int, unsigned int, float, double)', '{',
+                      '                   std::int8_t, int, unsigned int, float, double)', '{',
                       f'    matrixTests::checkSquareOperations<TestType, sel::Mat{rows}x{rows}<TestType>, {rows}>();',
                       '}', '']
     return '\n'.join(lines), combinations

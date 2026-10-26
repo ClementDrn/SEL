@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 
 namespace sel {
 
@@ -140,6 +142,10 @@ namespace sel {
 	/// @brief Representation of a 3x3 integer matrix.
 	///
 	using Mat3x3i = Mat3x3<int>;
+
+	/// @brief Representation of a 3x3 signed 8-bit integer matrix.
+	///
+	using Mat3x3i8 = Mat3x3<std::int8_t>;
 
 	/// @brief Representation of a 3x3 float matrix.
 	///

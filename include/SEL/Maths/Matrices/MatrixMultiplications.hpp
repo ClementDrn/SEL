@@ -1,6 +1,8 @@
 #pragma once
 
 #include <type_traits>
+#include <cstddef>
+#include <cstdint>
 
 #include "Mat8x8.hpp"
 #include "Mat16x16.hpp"
@@ -19,8 +21,52 @@
 #include "Mat2x2.hpp"
 
 #ifdef SEL_INTRINSIC_MATRIX_MUL
-	#include "SEL/Maths/Matrices/IntrinsicMatrixMul.hpp"
+	#include "SEL/Maths/Matrices/Intrinsic/Int32Mul.hpp"
+	#include "SEL/Maths/Matrices/Intrinsic/Float32Mul.hpp"
+	#include "SEL/Maths/Matrices/Intrinsic/Int8Mul.hpp"
 #endif
+
+
+namespace sel::utils {
+
+	/// @brief Multiply signed byte matrices using the configured backend.
+	///
+	/// Products wrap to the signed 8-bit range, without saturation.
+	///
+	/// @tparam Rows is the number of rows of the result.
+	/// @tparam Inner is the number of values in each dot product.
+	/// @tparam Columns is the number of columns of the result.
+	/// @param dst is the destination matrix, distinct from both inputs.
+	/// @param a is the first matrix.
+	/// @param b is the second matrix.
+	///
+	template <std::size_t Rows, std::size_t Inner, std::size_t Columns, class Product, class Left, class Right>
+	inline void mulMatrixInt8(Product& dst, const Left& a, const Right& b)
+	{
+#ifdef SEL_INTRINSIC_MATRIX_MUL
+		// Widen signed bytes for SIMD products, then retain the low eight bits.
+		mulMatrixInt8Simd<Rows, Inner, Columns>(dst, a, b);
+#else
+		// Accumulate in int so intermediate products never overflow signed bytes.
+		for (std::size_t row = 0; row < Rows; ++row)
+		{
+			for (std::size_t column = 0; column < Columns; ++column)
+			{
+				int value = 0;
+				for (std::size_t inner = 0; inner < Inner; ++inner)
+				{
+					value += int(a[row][inner]) * int(b[inner][column]);
+				}
+
+				// Wrap to [-128, 127] without an out-of-range signed conversion.
+				const unsigned int lowByte = static_cast<unsigned int>(value) & 0xffu;
+				dst[row][column] = static_cast<std::int8_t>(lowByte < 128u ? int(lowByte) : int(lowByte) - 256);
+			}
+		}
+#endif
+	}
+
+}
 
 
 namespace sel {
@@ -40,8 +86,14 @@ namespace sel {
 	{
 		Mat4x4<T> result;
 
+		if constexpr (std::is_same_v<T, std::int8_t>)
+		{
+			utils::mulMatrixInt8<4, 4, 4>(result, lhs, rhs);
+			return result;
+		}
+
 #ifdef SEL_INTRINSIC_MATRIX_MUL
-		// Intrinsic multiplication is only available for float and int matrices.
+		// Select the 32-bit float and integer intrinsic backends.
 		if constexpr (std::is_same_v<T, float>)
 		{
 			utils::mulMatrix_4x4_4x4((float*)&result, (float*)&lhs, (float*)&rhs);
@@ -95,8 +147,14 @@ namespace sel {
 	{
 		Mat4x4<T> result;
 
+		if constexpr (std::is_same_v<T, std::int8_t>)
+		{
+			utils::mulMatrixInt8<4, 3, 4>(result, lhs, rhs);
+			return result;
+		}
+
 #ifdef SEL_INTRINSIC_MATRIX_MUL
-		// Intrinsic multiplication is only available for float and int matrices.
+		// Select the 32-bit float and integer intrinsic backends.
 		if constexpr (std::is_same_v<T, float>)
 		{
 			utils::mulMatrix_4x3_3x4((float*)&result, (float*)&lhs, (float*)&rhs);
@@ -150,8 +208,14 @@ namespace sel {
 	{
 		Mat4x4<T> result;
 
+		if constexpr (std::is_same_v<T, std::int8_t>)
+		{
+			utils::mulMatrixInt8<4, 2, 4>(result, lhs, rhs);
+			return result;
+		}
+
 #ifdef SEL_INTRINSIC_MATRIX_MUL
-		// Intrinsic multiplication is only available for float and int matrices.
+		// Select the 32-bit float and integer intrinsic backends.
 		if constexpr (std::is_same_v<T, float>)
 		{
 			utils::mulMatrix_4x2_2x4((float*)&result, (float*)&lhs, (float*)&rhs);
@@ -208,8 +272,14 @@ namespace sel {
 	{
 		Mat4x3<T> result;
 
+		if constexpr (std::is_same_v<T, std::int8_t>)
+		{
+			utils::mulMatrixInt8<4, 4, 3>(result, lhs, rhs);
+			return result;
+		}
+
 #ifdef SEL_INTRINSIC_MATRIX_MUL
-		// Intrinsic multiplication is only available for float and int matrices.
+		// Select the 32-bit float and integer intrinsic backends.
 		if constexpr (std::is_same_v<T, float>)
 		{
 			utils::mulMatrix_4x4_4x3((float*)&result, (float*)&lhs, (float*)&rhs);
@@ -259,8 +329,14 @@ namespace sel {
 	{
 		Mat4x3<T> result;
 
+		if constexpr (std::is_same_v<T, std::int8_t>)
+		{
+			utils::mulMatrixInt8<4, 3, 3>(result, lhs, rhs);
+			return result;
+		}
+
 #ifdef SEL_INTRINSIC_MATRIX_MUL
-		// Intrinsic multiplication is only available for float and int matrices.
+		// Select the 32-bit float and integer intrinsic backends.
 		if constexpr (std::is_same_v<T, float>)
 		{
 			utils::mulMatrix_4x3_3x3((float*)&result, (float*)&lhs, (float*)&rhs);
@@ -310,8 +386,14 @@ namespace sel {
 	{
 		Mat4x3<T> result;
 
+		if constexpr (std::is_same_v<T, std::int8_t>)
+		{
+			utils::mulMatrixInt8<4, 2, 3>(result, lhs, rhs);
+			return result;
+		}
+
 #ifdef SEL_INTRINSIC_MATRIX_MUL
-		// Intrinsic multiplication is only available for float and int matrices.
+		// Select the 32-bit float and integer intrinsic backends.
 		if constexpr (std::is_same_v<T, float>)
 		{
 			utils::mulMatrix_4x2_2x3((float*)&result, (float*)&lhs, (float*)&rhs);
@@ -364,8 +446,14 @@ namespace sel {
 	{
 		Mat4x2<T> result;
 
+		if constexpr (std::is_same_v<T, std::int8_t>)
+		{
+			utils::mulMatrixInt8<4, 4, 2>(result, lhs, rhs);
+			return result;
+		}
+
 #ifdef SEL_INTRINSIC_MATRIX_MUL
-		// Intrinsic multiplication is only available for float and int matrices.
+		// Select the 32-bit float and integer intrinsic backends.
 		if constexpr (std::is_same_v<T, float>)
 		{
 			utils::mulMatrix_4x4_4x2((float*)&result, (float*)&lhs, (float*)&rhs);
@@ -411,8 +499,14 @@ namespace sel {
 	{
 		Mat4x2<T> result;
 
+		if constexpr (std::is_same_v<T, std::int8_t>)
+		{
+			utils::mulMatrixInt8<4, 3, 2>(result, lhs, rhs);
+			return result;
+		}
+
 #ifdef SEL_INTRINSIC_MATRIX_MUL
-		// Intrinsic multiplication is only available for float and int matrices.
+		// Select the 32-bit float and integer intrinsic backends.
 		if constexpr (std::is_same_v<T, float>)
 		{
 			utils::mulMatrix_4x3_3x2((float*)&result, (float*)&lhs, (float*)&rhs);
@@ -458,8 +552,14 @@ namespace sel {
 	{
 		Mat4x2<T> result;
 
+		if constexpr (std::is_same_v<T, std::int8_t>)
+		{
+			utils::mulMatrixInt8<4, 2, 2>(result, lhs, rhs);
+			return result;
+		}
+
 #ifdef SEL_INTRINSIC_MATRIX_MUL
-		// Intrinsic multiplication is only available for float and int matrices.
+		// Select the 32-bit float and integer intrinsic backends.
 		if constexpr (std::is_same_v<T, float>)
 		{
 			utils::mulMatrix_4x2_2x2((float*)&result, (float*)&lhs, (float*)&rhs);
@@ -508,8 +608,14 @@ namespace sel {
 	{
 		Mat3x4<T> result;
 
+		if constexpr (std::is_same_v<T, std::int8_t>)
+		{
+			utils::mulMatrixInt8<3, 4, 4>(result, lhs, rhs);
+			return result;
+		}
+
 #ifdef SEL_INTRINSIC_MATRIX_MUL
-		// Intrinsic multiplication is only available for float and int matrices.
+		// Select the 32-bit float and integer intrinsic backends.
 		if constexpr (std::is_same_v<T, float>)
 		{
 			utils::mulMatrix_3x4_4x4((float*)&result, (float*)&lhs, (float*)&rhs);
@@ -557,8 +663,14 @@ namespace sel {
 	{
 		Mat3x4<T> result;
 
+		if constexpr (std::is_same_v<T, std::int8_t>)
+		{
+			utils::mulMatrixInt8<3, 3, 4>(result, lhs, rhs);
+			return result;
+		}
+
 #ifdef SEL_INTRINSIC_MATRIX_MUL
-		// Intrinsic multiplication is only available for float and int matrices.
+		// Select the 32-bit float and integer intrinsic backends.
 		if constexpr (std::is_same_v<T, float>)
 		{
 			utils::mulMatrix_3x3_3x4((float*)&result, (float*)&lhs, (float*)&rhs);
@@ -606,8 +718,14 @@ namespace sel {
 	{
 		Mat3x4<T> result;
 
+		if constexpr (std::is_same_v<T, std::int8_t>)
+		{
+			utils::mulMatrixInt8<3, 2, 4>(result, lhs, rhs);
+			return result;
+		}
+
 #ifdef SEL_INTRINSIC_MATRIX_MUL
-		// Intrinsic multiplication is only available for float and int matrices.
+		// Select the 32-bit float and integer intrinsic backends.
 		if constexpr (std::is_same_v<T, float>)
 		{
 			utils::mulMatrix_3x2_2x4((float*)&result, (float*)&lhs, (float*)&rhs);
@@ -658,8 +776,14 @@ namespace sel {
 	{
 		Mat3x3<T> result;
 
+		if constexpr (std::is_same_v<T, std::int8_t>)
+		{
+			utils::mulMatrixInt8<3, 4, 3>(result, lhs, rhs);
+			return result;
+		}
+
 #ifdef SEL_INTRINSIC_MATRIX_MUL
-		// Intrinsic multiplication is only available for float and int matrices.
+		// Select the 32-bit float and integer intrinsic backends.
 		if constexpr (std::is_same_v<T, float>)
 		{
 			utils::mulMatrix_3x4_4x3((float*)&result, (float*)&lhs, (float*)&rhs);
@@ -704,8 +828,14 @@ namespace sel {
 	{
 		Mat3x3<T> result;
 
+		if constexpr (std::is_same_v<T, std::int8_t>)
+		{
+			utils::mulMatrixInt8<3, 3, 3>(result, lhs, rhs);
+			return result;
+		}
+
 #ifdef SEL_INTRINSIC_MATRIX_MUL
-		// Intrinsic multiplication is only available for float and int matrices.
+		// Select the 32-bit float and integer intrinsic backends.
 		if constexpr (std::is_same_v<T, float>)
 		{
 			utils::mulMatrix_3x3_3x3((float*)&result, (float*)&lhs, (float*)&rhs);
@@ -750,8 +880,14 @@ namespace sel {
 	{
 		Mat3x3<T> result;
 
+		if constexpr (std::is_same_v<T, std::int8_t>)
+		{
+			utils::mulMatrixInt8<3, 2, 3>(result, lhs, rhs);
+			return result;
+		}
+
 #ifdef SEL_INTRINSIC_MATRIX_MUL
-		// Intrinsic multiplication is only available for float and int matrices.
+		// Select the 32-bit float and integer intrinsic backends.
 		if constexpr (std::is_same_v<T, float>)
 		{
 			utils::mulMatrix_3x2_2x3((float*)&result, (float*)&lhs, (float*)&rhs);
@@ -799,8 +935,14 @@ namespace sel {
 	{
 		Mat3x2<T> result;
 
+		if constexpr (std::is_same_v<T, std::int8_t>)
+		{
+			utils::mulMatrixInt8<3, 4, 2>(result, lhs, rhs);
+			return result;
+		}
+
 #ifdef SEL_INTRINSIC_MATRIX_MUL
-		// Intrinsic multiplication is only available for float and int matrices.
+		// Select the 32-bit float and integer intrinsic backends.
 		if constexpr (std::is_same_v<T, float>)
 		{
 			utils::mulMatrix_3x4_4x2((float*)&result, (float*)&lhs, (float*)&rhs);
@@ -842,8 +984,14 @@ namespace sel {
 	{
 		Mat3x2<T> result;
 
+		if constexpr (std::is_same_v<T, std::int8_t>)
+		{
+			utils::mulMatrixInt8<3, 3, 2>(result, lhs, rhs);
+			return result;
+		}
+
 #ifdef SEL_INTRINSIC_MATRIX_MUL
-		// Intrinsic multiplication is only available for float and int matrices.
+		// Select the 32-bit float and integer intrinsic backends.
 		if constexpr (std::is_same_v<T, float>)
 		{
 			utils::mulMatrix_3x3_3x2((float*)&result, (float*)&lhs, (float*)&rhs);
@@ -885,8 +1033,14 @@ namespace sel {
 	{
 		Mat3x2<T> result;
 
+		if constexpr (std::is_same_v<T, std::int8_t>)
+		{
+			utils::mulMatrixInt8<3, 2, 2>(result, lhs, rhs);
+			return result;
+		}
+
 #ifdef SEL_INTRINSIC_MATRIX_MUL
-		// Intrinsic multiplication is only available for float and int matrices.
+		// Select the 32-bit float and integer intrinsic backends.
 		if constexpr (std::is_same_v<T, float>)
 		{
 			utils::mulMatrix_3x2_2x2((float*)&result, (float*)&lhs, (float*)&rhs);
@@ -931,8 +1085,14 @@ namespace sel {
 	{
 		Mat2x4<T> result;
 
+		if constexpr (std::is_same_v<T, std::int8_t>)
+		{
+			utils::mulMatrixInt8<2, 4, 4>(result, lhs, rhs);
+			return result;
+		}
+
 #ifdef SEL_INTRINSIC_MATRIX_MUL
-		// Intrinsic multiplication is only available for float and int matrices.
+		// Select the 32-bit float and integer intrinsic backends.
 		if constexpr (std::is_same_v<T, float>)
 		{
 			utils::mulMatrix_2x4_4x4((float*)&result, (float*)&lhs, (float*)&rhs);
@@ -974,8 +1134,14 @@ namespace sel {
 	{
 		Mat2x4<T> result;
 
+		if constexpr (std::is_same_v<T, std::int8_t>)
+		{
+			utils::mulMatrixInt8<2, 3, 4>(result, lhs, rhs);
+			return result;
+		}
+
 #ifdef SEL_INTRINSIC_MATRIX_MUL
-		// Intrinsic multiplication is only available for float and int matrices.
+		// Select the 32-bit float and integer intrinsic backends.
 		if constexpr (std::is_same_v<T, float>)
 		{
 			utils::mulMatrix_2x3_3x4((float*)&result, (float*)&lhs, (float*)&rhs);
@@ -1017,8 +1183,14 @@ namespace sel {
 	{
 		Mat2x4<T> result;
 
+		if constexpr (std::is_same_v<T, std::int8_t>)
+		{
+			utils::mulMatrixInt8<2, 2, 4>(result, lhs, rhs);
+			return result;
+		}
+
 #ifdef SEL_INTRINSIC_MATRIX_MUL
-		// Intrinsic multiplication is only available for float and int matrices.
+		// Select the 32-bit float and integer intrinsic backends.
 		if constexpr (std::is_same_v<T, float>)
 		{
 			utils::mulMatrix_2x2_2x4((float*)&result, (float*)&lhs, (float*)&rhs);
@@ -1063,8 +1235,14 @@ namespace sel {
 	{
 		Mat2x3<T> result;
 
+		if constexpr (std::is_same_v<T, std::int8_t>)
+		{
+			utils::mulMatrixInt8<2, 4, 3>(result, lhs, rhs);
+			return result;
+		}
+
 #ifdef SEL_INTRINSIC_MATRIX_MUL
-		// Intrinsic multiplication is only available for float and int matrices.
+		// Select the 32-bit float and integer intrinsic backends.
 		if constexpr (std::is_same_v<T, float>)
 		{
 			utils::mulMatrix_2x4_4x3((float*)&result, (float*)&lhs, (float*)&rhs);
@@ -1104,8 +1282,14 @@ namespace sel {
 	{
 		Mat2x3<T> result;
 
+		if constexpr (std::is_same_v<T, std::int8_t>)
+		{
+			utils::mulMatrixInt8<2, 3, 3>(result, lhs, rhs);
+			return result;
+		}
+
 #ifdef SEL_INTRINSIC_MATRIX_MUL
-		// Intrinsic multiplication is only available for float and int matrices.
+		// Select the 32-bit float and integer intrinsic backends.
 		if constexpr (std::is_same_v<T, float>)
 		{
 			utils::mulMatrix_2x3_3x3((float*)&result, (float*)&lhs, (float*)&rhs);
@@ -1145,8 +1329,14 @@ namespace sel {
 	{
 		Mat2x3<T> result;
 
+		if constexpr (std::is_same_v<T, std::int8_t>)
+		{
+			utils::mulMatrixInt8<2, 2, 3>(result, lhs, rhs);
+			return result;
+		}
+
 #ifdef SEL_INTRINSIC_MATRIX_MUL
-		// Intrinsic multiplication is only available for float and int matrices.
+		// Select the 32-bit float and integer intrinsic backends.
 		if constexpr (std::is_same_v<T, float>)
 		{
 			utils::mulMatrix_2x2_2x3((float*)&result, (float*)&lhs, (float*)&rhs);
@@ -1189,8 +1379,14 @@ namespace sel {
 	{
 		Mat2x2<T> result;
 
+		if constexpr (std::is_same_v<T, std::int8_t>)
+		{
+			utils::mulMatrixInt8<2, 4, 2>(result, lhs, rhs);
+			return result;
+		}
+
 #ifdef SEL_INTRINSIC_MATRIX_MUL
-		// Intrinsic multiplication is only available for float and int matrices.
+		// Select the 32-bit float and integer intrinsic backends.
 		if constexpr (std::is_same_v<T, float>)
 		{
 			utils::mulMatrix_2x4_4x2((float*)&result, (float*)&lhs, (float*)&rhs);
@@ -1228,8 +1424,14 @@ namespace sel {
 	{
 		Mat2x2<T> result;
 
+		if constexpr (std::is_same_v<T, std::int8_t>)
+		{
+			utils::mulMatrixInt8<2, 3, 2>(result, lhs, rhs);
+			return result;
+		}
+
 #ifdef SEL_INTRINSIC_MATRIX_MUL
-		// Intrinsic multiplication is only available for float and int matrices.
+		// Select the 32-bit float and integer intrinsic backends.
 		if constexpr (std::is_same_v<T, float>)
 		{
 			utils::mulMatrix_2x3_3x2((float*)&result, (float*)&lhs, (float*)&rhs);
@@ -1267,8 +1469,14 @@ namespace sel {
 	{
 		Mat2x2<T> result;
 
+		if constexpr (std::is_same_v<T, std::int8_t>)
+		{
+			utils::mulMatrixInt8<2, 2, 2>(result, lhs, rhs);
+			return result;
+		}
+
 #ifdef SEL_INTRINSIC_MATRIX_MUL
-		// Intrinsic multiplication is only available for float and int matrices.
+		// Select the 32-bit float and integer intrinsic backends.
 		if constexpr (std::is_same_v<T, float>)
 		{
 			utils::mulMatrix_2x2_2x2((float*)&result, (float*)&lhs, (float*)&rhs);
@@ -1309,8 +1517,14 @@ namespace sel {
 	{
 		Mat8x8<T> result;
 
+		if constexpr (std::is_same_v<T, std::int8_t>)
+		{
+			utils::mulMatrixInt8<8, 8, 8>(result, lhs, rhs);
+			return result;
+		}
+
 #ifdef SEL_INTRINSIC_MATRIX_MUL
-		// Intrinsic multiplication is only available for float and int matrices.
+		// Select the 32-bit float and integer intrinsic backends.
 		if constexpr (std::is_same_v<T, float> || std::is_same_v<T, int>)
 		{
 			utils::mulMatrix_8x8_8x8(result.m_data, lhs.m_data, rhs.m_data);
@@ -1351,8 +1565,14 @@ namespace sel {
 	{
 		Mat16x16<T> result;
 
+		if constexpr (std::is_same_v<T, std::int8_t>)
+		{
+			utils::mulMatrixInt8<16, 16, 16>(result, lhs, rhs);
+			return result;
+		}
+
 #ifdef SEL_INTRINSIC_MATRIX_MUL
-		// Intrinsic multiplication is only available for float and int matrices.
+		// Select the 32-bit float and integer intrinsic backends.
 		if constexpr (std::is_same_v<T, float> || std::is_same_v<T, int>)
 		{
 			utils::mulMatrix_16x16_16x16(result.m_data, lhs.m_data, rhs.m_data);
@@ -1393,8 +1613,14 @@ namespace sel {
 	{
 		Mat32x32<T> result;
 
+		if constexpr (std::is_same_v<T, std::int8_t>)
+		{
+			utils::mulMatrixInt8<32, 32, 32>(result, lhs, rhs);
+			return result;
+		}
+
 #ifdef SEL_INTRINSIC_MATRIX_MUL
-		// Intrinsic multiplication is only available for float and int matrices.
+		// Select the 32-bit float and integer intrinsic backends.
 		if constexpr (std::is_same_v<T, float> || std::is_same_v<T, int>)
 		{
 			utils::mulMatrix_32x32_32x32(result.m_data, lhs.m_data, rhs.m_data);

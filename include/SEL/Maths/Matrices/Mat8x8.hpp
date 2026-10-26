@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 #include <cstddef>
 
 
@@ -348,6 +350,10 @@ namespace sel {
 	/// @brief Representation of a 8x8 integer matrix.
 	///
 	using Mat8x8i = Mat8x8<int>;
+
+	/// @brief Representation of a 8x8 signed 8-bit integer matrix.
+	///
+	using Mat8x8i8 = Mat8x8<std::int8_t>;
 
 	/// @brief Representation of a 8x8 float matrix.
 	///

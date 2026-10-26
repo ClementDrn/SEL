@@ -3,9 +3,11 @@
 *.sln
 *.vcxproj*
 
+# Cache
+__pycache__/
+
 # Test project generation
 vendor/
-scripts/
 premake5.lua
 
 # Tests

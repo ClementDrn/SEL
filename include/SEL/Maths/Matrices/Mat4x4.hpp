@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 
 namespace sel {
 
@@ -164,6 +166,10 @@ namespace sel {
 	/// @brief Representation of a 4x4 integer matrix.
 	///
 	using Mat4x4i = Mat4x4<int>;
+
+	/// @brief Representation of a 4x4 signed 8-bit integer matrix.
+	///
+	using Mat4x4i8 = Mat4x4<std::int8_t>;
 
 	/// @brief Representation of a 4x4 float matrix.
 	///

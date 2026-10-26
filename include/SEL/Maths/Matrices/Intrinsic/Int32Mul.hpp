@@ -1,0 +1,661 @@
+// Intrinsic matrix multiplications for 32-bit integer values.
+#pragma once
+
+#include <immintrin.h>
+#include <cstring>
+#include <cstddef>
+
+
+namespace sel::utils {
+
+	// --- 1x2 result ----------------------------------------------------------
+
+
+    inline void mulMatrix_1x2_2x2(int* dst, const int* a, const int* b)
+    {
+		// Result is 1x2
+		__m128i vResult;	// 4 ints
+		__m128 vResultF;	// 4 floats (for shuffling)
+
+		vResult = _mm_mullo_epi32(
+			_mm_set_epi32(a[1], a[1], a[0], a[0]),
+			_mm_lddqu_si128((__m128i*)b)      // 3, 2, 1, 0
+		);
+
+		// Cast to float (it is just interpreted as float, no conversion is done)
+		vResultF = _mm_castsi128_ps(vResult);
+
+		// Add 0 & 2 and 1 & 3
+		// Note: Computations are done twice.
+		vResult = _mm_add_epi32(
+			vResult,
+			_mm_castps_si128(_mm_shuffle_ps(vResultF, vResultF, _MM_SHUFFLE(1, 0, 3, 2)))
+		);
+
+		int tmp[4];
+		_mm_store_si128((__m128i*)tmp, vResult);
+		std::memcpy(dst, tmp, sizeof(int) * 2);
+    }
+
+
+    inline void mulMatrix_1x3_3x2(int* dst, const int* a, const int* b)
+    {
+        // Result is 1x2
+        // First we do 1x2_2x2, then 1x1_1x2
+        __m128i vResult, vResult1, vResult2;
+		__m128 vResult1F;
+
+        vResult1 = _mm_mullo_epi32(
+			_mm_set_epi32(a[1], a[1], a[0], a[0]),
+			_mm_lddqu_si128((__m128i*)&b[0])      // 3, 2, 1, 0
+		);
+
+		// Cast to float (it is just interpreted as float, no conversion is done)
+		vResult1F = _mm_castsi128_ps(vResult1);
+
+        // Add 0 & 2 and 1 & 3
+        vResult1 = _mm_add_epi32(
+			vResult1,
+			_mm_castps_si128(_mm_shuffle_ps(vResult1F, vResult1F, _MM_SHUFFLE(1, 0, 3, 2)))
+		);
+
+		// 1x1_1x2
+		vResult2 = _mm_mullo_epi32(
+            _mm_set_epi32(0, 0, a[2], a[2]),
+            _mm_set_epi32(0, 0, b[5], b[4])
+		);
+
+        // Add the two sub results
+		vResult = _mm_add_epi32(
+            vResult1,
+            vResult2
+		);
+
+        int tmp[4];
+		_mm_store_si128((__m128i*)tmp, vResult);
+		std::memcpy(dst, tmp, sizeof(int) * 2);
+    }
+
+
+	inline void mulMatrix_1x4_4x2(int* dst, const int* a, const int* b)
+	{
+		// Result is 1x2
+		// Matrices are cut in half, 1x2 for a and 2x2 for b.
+		__m128i vResult, vResult1, vResult2;
+		__m128 vResultF;
+
+		vResult1 = _mm_mullo_epi32(
+			_mm_set_epi32(a[1], a[1], a[0], a[0]),
+			_mm_lddqu_si128((__m128i*)b)      // 3, 2, 1, 0
+		);
+
+		vResult2 = _mm_mullo_epi32(
+			_mm_set_epi32(a[3], a[3], a[2], a[2]),
+			_mm_lddqu_si128((__m128i*)&b[4])      // 3, 2, 1, 0
+		);
+
+		vResult = _mm_add_epi32(
+			vResult1,
+			vResult2
+		);
+
+		// Cast to float (it is just interpreted as float, no conversion is done)
+		vResultF = _mm_castsi128_ps(vResult);
+
+		// Add 0 & 2 and 1 & 3
+		vResult = _mm_add_epi32(
+			vResult,
+			_mm_castps_si128(_mm_shuffle_ps(vResultF, vResultF, _MM_SHUFFLE(1, 0, 3, 2)))
+		);
+
+		int tmp[4];
+		_mm_store_si128((__m128i*)tmp, vResult);
+		std::memcpy(dst, tmp, sizeof(int) * 2);
+	}
+
+
+	// --- 2x2 result ----------------------------------------------------------
+
+
+    inline void mulMatrix_2x2_2x2(int* dst, const int* a, const int* b)
+    {
+		// Result is 2x2
+		__m128i vA, vB, vResult;
+		__m128 vAf, vBf;
+
+		vA = _mm_lddqu_si128((__m128i*)a);
+		vB = _mm_lddqu_si128((__m128i*)b);
+
+		vAf = _mm_castsi128_ps(vA);
+		vBf = _mm_castsi128_ps(vB);
+
+		vResult = _mm_mullo_epi32(
+			_mm_castps_si128(_mm_shuffle_ps(vAf, vAf, _MM_SHUFFLE(2, 2, 0, 0))),
+			_mm_castps_si128(_mm_shuffle_ps(vBf, vBf, _MM_SHUFFLE(1, 0, 1, 0)))
+		);
+
+		vResult = _mm_add_epi32(vResult, _mm_mullo_epi32(
+			_mm_castps_si128(_mm_shuffle_ps(vAf, vAf, _MM_SHUFFLE(3, 3, 1, 1))),
+			_mm_castps_si128(_mm_shuffle_ps(vBf, vBf, _MM_SHUFFLE(3, 2, 3, 2))))
+		);
+
+		_mm_store_si128((__m128i*)dst, vResult);
+	}
+
+
+    inline void mulMatrix_2x3_3x2(int* dst, const int* a, const int* b)
+	{
+        // Result is 2x2
+		mulMatrix_1x3_3x2(&dst[0], &a[0], b);
+		mulMatrix_1x3_3x2(&dst[2], &a[3], b);
+    }
+
+
+    inline void mulMatrix_2x4_4x2(int* dst, const int* a, const int* b)
+    {
+        // Result is 2x2
+        mulMatrix_1x4_4x2(&dst[0], &a[0], b);
+        mulMatrix_1x4_4x2(&dst[2], &a[4], b);
+    }
+
+
+	// --- 3x2 result ----------------------------------------------------------
+
+
+    inline void mulMatrix_3x2_2x2(int* dst, const int* a, const int* b)
+	{
+		// Result is 3x2
+		mulMatrix_2x2_2x2(&dst[0], &a[0], b);
+		mulMatrix_1x2_2x2(&dst[4], &a[4], b);
+	}
+
+
+    inline void mulMatrix_3x3_3x2(int* dst, const int* a, const int* b)
+	{
+		// Result is 3x2
+		mulMatrix_1x3_3x2(&dst[0], &a[0], b);
+		mulMatrix_1x3_3x2(&dst[2], &a[3], b);
+		mulMatrix_1x3_3x2(&dst[4], &a[6], b);
+	}
+
+
+    inline void mulMatrix_3x4_4x2(int* dst, const int* a, const int* b)
+    {
+        // Result is 3x2
+        mulMatrix_1x4_4x2(&dst[0], &a[0], b);
+        mulMatrix_1x4_4x2(&dst[2], &a[4], b);
+        mulMatrix_1x4_4x2(&dst[4], &a[8], b);
+    }
+
+
+	// --- 4x2 result ----------------------------------------------------------
+
+
+    inline void mulMatrix_4x2_2x2(int* dst, const int* a, const int* b)
+	{
+		// Result is 4x2
+		mulMatrix_2x2_2x2(&dst[0], &a[0], b);
+		mulMatrix_2x2_2x2(&dst[4], &a[4], b);
+	}
+
+
+    inline void mulMatrix_4x3_3x2(int* dst, const int* a, const int* b)
+    {
+        // Result is 4x2
+        mulMatrix_1x3_3x2(&dst[0], &a[0], b);
+        mulMatrix_1x3_3x2(&dst[2], &a[3], b);
+        mulMatrix_1x3_3x2(&dst[4], &a[6], b);
+        mulMatrix_1x3_3x2(&dst[6], &a[9], b);
+    }
+
+
+    inline void mulMatrix_4x4_4x2(int* dst, const int* a, const int* b)
+	{
+		// Result is 4x2
+		mulMatrix_1x4_4x2(&dst[0], &a[0], b);
+		mulMatrix_1x4_4x2(&dst[2], &a[4], b);
+		mulMatrix_1x4_4x2(&dst[4], &a[8], b);
+		mulMatrix_1x4_4x2(&dst[6], &a[12], b);
+	}
+
+
+	// --- 1x3 result ----------------------------------------------------------
+
+
+    inline void mulMatrix_1x2_2x3(int* dst, const int* a, const int* b)
+    {
+		// Result is 1x3
+		__m128i vB, vResult;
+		
+		// Row 0 of b
+		vB = _mm_set_epi32(0, b[2], b[1], b[0]);
+		vResult = _mm_mullo_epi32(
+			_mm_set1_epi32(a[0]),
+			vB
+		);
+		// Row 1 of b
+		vB = _mm_set_epi32(0, b[5], b[4], b[3]);
+		vResult = _mm_add_epi32(vResult, _mm_mullo_epi32(
+			_mm_set1_epi32(a[1]),
+			vB
+		));
+
+		int tmp[4];
+		_mm_store_si128((__m128i*)tmp, vResult);
+		std::memcpy(dst, tmp, sizeof(int) * 3);
+    }
+
+
+    inline void mulMatrix_1x3_3x3(int* dst, const int* a, const int* b)
+	{
+        // Result is 1x3
+		__m128i vB, vResult;
+
+		// Row 0 of b
+		vB = _mm_set_epi32(0, b[2], b[1], b[0]);
+		vResult = _mm_mullo_epi32(
+			_mm_set1_epi32(a[0]),
+			vB
+		);
+		// Row 1 of b
+		vB = _mm_set_epi32(0, b[5], b[4], b[3]);
+		vResult = _mm_add_epi32(vResult, _mm_mullo_epi32(
+			_mm_set1_epi32(a[1]),
+			vB
+		));
+		// Row 2 of b
+		vB = _mm_set_epi32(0, b[8], b[7], b[6]);
+		vResult = _mm_add_epi32(vResult, _mm_mullo_epi32(
+			_mm_set1_epi32(a[2]),
+			vB
+		));
+
+		int tmp[4];
+		_mm_store_si128((__m128i*)tmp, vResult);
+		std::memcpy(dst, tmp, sizeof(int) * 3);
+	}
+
+
+    inline void mulMatrix_1x4_4x3(int* dst, const int* a, const int* b)
+	{
+        // Result is 1x3
+        __m128i vB, vResult;
+
+		// Row 0 of b
+		vB = _mm_set_epi32(0, b[2], b[1], b[0]);
+		vResult = _mm_mullo_epi32(
+			_mm_set1_epi32(a[0]),
+			vB
+		);
+		// Row 1 of b
+		vB = _mm_set_epi32(0, b[5], b[4], b[3]);
+		vResult = _mm_add_epi32(vResult, _mm_mullo_epi32(
+			_mm_set1_epi32(a[1]),
+			vB
+		));
+		// Row 2 of b
+		vB = _mm_set_epi32(0, b[8], b[7], b[6]);
+		vResult = _mm_add_epi32(vResult, _mm_mullo_epi32(
+			_mm_set1_epi32(a[2]),
+			vB
+		));
+		// Row 3 of b
+		vB = _mm_set_epi32(0, b[11], b[10], b[9]);
+		vResult = _mm_add_epi32(vResult, _mm_mullo_epi32(
+			_mm_set1_epi32(a[3]),
+			vB
+		));
+
+		int tmp[4];
+		_mm_store_si128((__m128i*)tmp, vResult);
+		std::memcpy(dst, tmp, sizeof(int) * 3);
+	}
+
+
+	// --- 2x3 result ----------------------------------------------------------
+
+
+    inline void mulMatrix_2x2_2x3(int* dst, const int* a, const int* b)
+    {
+        // Result is 2x3 
+        mulMatrix_1x2_2x3(&dst[0], &a[0], b);
+        mulMatrix_1x2_2x3(&dst[3], &a[2], b);
+    }
+
+
+    inline void mulMatrix_2x3_3x3(int* dst, const int* a, const int* b)
+    {
+        // Result is 2x3 
+        mulMatrix_1x3_3x3(&dst[0], &a[0], b);
+        mulMatrix_1x3_3x3(&dst[3], &a[3], b);
+    }
+
+
+    inline void mulMatrix_2x4_4x3(int* dst, const int* a, const int* b)
+	{
+		// Result is 2x3 
+		mulMatrix_1x4_4x3(&dst[0], &a[0], b);
+		mulMatrix_1x4_4x3(&dst[3], &a[4], b);
+	}
+
+
+	// --- 3x3 result ----------------------------------------------------------
+
+
+    inline void mulMatrix_3x2_2x3(int* dst, const int* a, const int* b)
+    {
+        // Result is 3x3 
+        mulMatrix_1x2_2x3(&dst[0], &a[0], b);
+        mulMatrix_1x2_2x3(&dst[3], &a[2], b);
+        mulMatrix_1x2_2x3(&dst[6], &a[4], b);
+    }
+
+
+    inline void mulMatrix_3x3_3x3(int* dst, const int* a, const int* b)
+    {
+        // Result is 3x3 
+        mulMatrix_1x3_3x3(&dst[0], &a[0], b);
+        mulMatrix_1x3_3x3(&dst[3], &a[3], b);
+        mulMatrix_1x3_3x3(&dst[6], &a[6], b);
+    }
+
+
+    inline void mulMatrix_3x4_4x3(int* dst, const int* a, const int* b)
+	{
+		// Result is 3x3
+		mulMatrix_1x4_4x3(&dst[0], &a[0], b);
+		mulMatrix_1x4_4x3(&dst[3], &a[4], b);
+		mulMatrix_1x4_4x3(&dst[6], &a[8], b);
+	}
+
+
+	// --- 4x3 result ----------------------------------------------------------
+
+
+    inline void mulMatrix_4x2_2x3(int* dst, const int* a, const int* b)
+    {
+        // Result is 4x3
+        mulMatrix_2x2_2x3(&dst[0], &a[0], b);
+        mulMatrix_2x2_2x3(&dst[6], &a[4], b);
+    }
+
+
+    inline void mulMatrix_4x3_3x3(int* dst, const int* a, const int* b)
+	{
+		// Result is 4x3 
+		mulMatrix_1x3_3x3(&dst[0], &a[0], b);
+		mulMatrix_1x3_3x3(&dst[3], &a[3], b);
+		mulMatrix_1x3_3x3(&dst[6], &a[6], b);
+		mulMatrix_1x3_3x3(&dst[9], &a[9], b);
+	}
+
+
+    inline void mulMatrix_4x4_4x3(int* dst, const int* a, const int* b)
+    {
+		// Result is 4x3
+		mulMatrix_1x4_4x3(&dst[0], &a[0], b);
+		mulMatrix_1x4_4x3(&dst[3], &a[4], b);
+		mulMatrix_1x4_4x3(&dst[6], &a[8], b);
+		mulMatrix_1x4_4x3(&dst[9], &a[12], b);
+    }
+
+
+	// --- 1x4 result ----------------------------------------------------------
+
+
+    inline void mulMatrix_1x2_2x4(int* dst, const int* a, const int* b)
+	{
+		// Result is 1x4
+		__m128i vB, vResult;
+
+		// Row 0 of b
+		vB = _mm_lddqu_si128((__m128i*)&b[0]);
+		vResult = _mm_mullo_epi32(
+			_mm_set1_epi32(a[0]),		// The register is filled with the first element of a
+			vB
+		);
+		// Row 1 of b
+		vB = _mm_lddqu_si128((__m128i*)&b[4]);
+		vResult = _mm_add_epi32(vResult, _mm_mullo_epi32(
+			_mm_set1_epi32(a[1]),
+			vB
+		));
+
+		_mm_store_si128((__m128i*)dst, vResult);
+	}
+
+
+    inline void mulMatrix_1x3_3x4(int* dst, const int* a, const int* b)
+    {
+		// Result is 1x4
+		__m128i vB, vResult;
+
+		// Row 0 of b
+		vB = _mm_lddqu_si128((__m128i*)&b[0]);
+		vResult = _mm_mullo_epi32(
+			_mm_set1_epi32(a[0]),
+			vB
+		);
+		// Row 1 of b
+		vB = _mm_lddqu_si128((__m128i*)&b[4]);
+		vResult = _mm_add_epi32(vResult, _mm_mullo_epi32(
+			_mm_set1_epi32(a[1]),
+			vB
+		));
+		// Row 2 of b
+		vB = _mm_lddqu_si128((__m128i*)&b[8]);
+		vResult = _mm_add_epi32(vResult, _mm_mullo_epi32(
+			_mm_set1_epi32(a[2]),
+			vB
+		));
+
+		_mm_store_si128((__m128i*)dst, vResult);
+    }
+
+
+	inline void mulMatrix_1x4_4x4(int* dst, const int* a, const int* b)
+	{
+		// Result is 1x4
+		__m128i vB, vResult;
+
+		// Row 0 of b
+		vB = _mm_lddqu_si128((__m128i*)&b[0]);
+		vResult = _mm_mullo_epi32(
+			_mm_set1_epi32(a[0]),
+			vB
+		);
+		// Row 1 of b
+		vB = _mm_lddqu_si128((__m128i*)&b[4]);
+		vResult = _mm_add_epi32(vResult, _mm_mullo_epi32(
+			_mm_set1_epi32(a[1]),
+			vB
+		));
+		// Row 2 of b
+		vB = _mm_lddqu_si128((__m128i*)&b[8]);
+		vResult = _mm_add_epi32(vResult, _mm_mullo_epi32(
+			_mm_set1_epi32(a[2]),
+			vB
+		));
+		// Row 3 of b
+		vB = _mm_lddqu_si128((__m128i*)&b[12]);
+		vResult = _mm_add_epi32(vResult, _mm_mullo_epi32(
+			_mm_set1_epi32(a[3]),
+			vB
+		));
+
+		_mm_store_si128((__m128i*)dst, vResult);
+	}
+
+
+	// --- 2x4 result ----------------------------------------------------------
+
+
+	inline void mulMatrix_2x2_2x4(int* dst, const int* a, const int* b)
+	{
+		// Result is 2x4
+		// We calculate row by row.
+		mulMatrix_1x2_2x4(&dst[0], &a[0], b);
+		mulMatrix_1x2_2x4(&dst[4], &a[2], b);
+	}
+
+
+	inline void mulMatrix_2x3_3x4(int* dst, const int* a, const int* b)
+	{
+		// Result is 2x4
+		// We calculate row by row.
+		mulMatrix_1x3_3x4(&dst[0], &a[0], b);
+		mulMatrix_1x3_3x4(&dst[4], &a[3], b);
+	}
+
+
+	inline void mulMatrix_2x4_4x4(int* dst, const int* a, const int* b)
+	{
+		// Result is 2x4
+		// We calculate row by row.
+		mulMatrix_1x4_4x4(&dst[0], &a[0], b);
+		mulMatrix_1x4_4x4(&dst[4], &a[4], b);
+	}
+
+	
+	// --- 3x4 result ----------------------------------------------------------
+
+
+	inline void mulMatrix_3x2_2x4(int* dst, const int* a, const int* b)
+	{
+		// Result is 3x4
+		// We calculate row by row.
+		mulMatrix_1x2_2x4(&dst[0], &a[0], b);
+		mulMatrix_1x2_2x4(&dst[4], &a[2], b);
+		mulMatrix_1x2_2x4(&dst[8], &a[4], b);
+	}
+
+
+	inline void mulMatrix_3x3_3x4(int* dst, const int* a, const int* b)
+	{
+		// Result is 3x4
+		// We calculate row by row.
+		mulMatrix_1x3_3x4(&dst[0], &a[0], b);
+		mulMatrix_1x3_3x4(&dst[4], &a[3], b);
+		mulMatrix_1x3_3x4(&dst[8], &a[6], b);
+	}
+
+
+	inline void mulMatrix_3x4_4x4(int* dst, const int* a, const int* b)
+	{
+		// Result is 3x4
+		// We calculate row by row.
+		mulMatrix_1x4_4x4(&dst[0], &a[0], b);
+		mulMatrix_1x4_4x4(&dst[4], &a[4], b);
+		mulMatrix_1x4_4x4(&dst[8], &a[8], b);
+	}
+
+
+	// --- 4x4 result ----------------------------------------------------------
+
+
+	inline void mulMatrix_4x2_2x4(int* dst, const int* a, const int* b)
+	{
+		// Result is 4x4
+		// We calculate 2-rows blocks each at a time.
+		mulMatrix_2x2_2x4(&dst[0], &a[0], b);
+		mulMatrix_2x2_2x4(&dst[8], &a[4], b);
+	}
+
+
+	inline void mulMatrix_4x3_3x4(int* dst, const int* a, const int* b)
+	{
+		// Result is 4x4
+		// We calculate row by row.
+		mulMatrix_1x3_3x4(&dst[0], &a[0], b);
+		mulMatrix_1x3_3x4(&dst[4], &a[3], b);
+		mulMatrix_1x3_3x4(&dst[8], &a[6], b);
+		mulMatrix_1x3_3x4(&dst[12], &a[9], b);
+	}
+
+
+	inline void mulMatrix_4x4_4x4(int* dst, const int* a, const int* b)
+	{
+		// Result is 4x4
+		// We calculate row by row.
+		mulMatrix_1x4_4x4(&dst[0], &a[0], b);
+		mulMatrix_1x4_4x4(&dst[4], &a[4], b);
+		mulMatrix_1x4_4x4(&dst[8], &a[8], b);
+		mulMatrix_1x4_4x4(&dst[12], &a[12], b);
+	}
+
+
+	// --- Large square results ------------------------------------------------
+
+
+	/// @brief Multiply integer square matrices in groups of four columns.
+	///
+	/// @tparam Size is the number of rows and columns, divisible by four.
+	/// @param dst is the destination matrix, distinct from both inputs.
+	/// @param a is the first matrix.
+	/// @param b is the second matrix.
+	///
+	template <std::size_t Size>
+	inline void mulMatrixSquare(int (&dst)[Size][Size], const int (&a)[Size][Size], const int (&b)[Size][Size])
+	{
+		static_assert(Size % 4 == 0, "SIMD multiplication requires groups of four columns");
+
+		// Accumulate four integer products at a time using the existing SSE4.1 backend.
+		// Matrix rows need no additional alignment for these loads and stores.
+		for (std::size_t row = 0; row < Size; ++row)
+		{
+			for (std::size_t column = 0; column < Size; column += 4)
+			{
+				__m128i vResult = _mm_mullo_epi32(_mm_set1_epi32(a[row][0]),
+					_mm_loadu_si128((const __m128i*)&b[0][column]));
+				for (std::size_t inner = 1; inner < Size; ++inner)
+				{
+					vResult = _mm_add_epi32(vResult, _mm_mullo_epi32(
+						_mm_set1_epi32(a[row][inner]), _mm_loadu_si128((const __m128i*)&b[inner][column])
+					));
+				}
+
+				_mm_storeu_si128((__m128i*)&dst[row][column], vResult);
+			}
+		}
+	}
+
+
+	/// @brief Multiply two 8x8 int matrices using SIMD instructions.
+	///
+	/// @param dst is the destination matrix, distinct from both inputs.
+	/// @param a is the first matrix.
+	/// @param b is the second matrix.
+	///
+	inline void mulMatrix_8x8_8x8(int (&dst)[8][8], const int (&a)[8][8], const int (&b)[8][8])
+	{
+		// Calculate each row in groups of four columns.
+		mulMatrixSquare(dst, a, b);
+	}
+
+
+	/// @brief Multiply two 16x16 int matrices using SIMD instructions.
+	///
+	/// @param dst is the destination matrix, distinct from both inputs.
+	/// @param a is the first matrix.
+	/// @param b is the second matrix.
+	///
+	inline void mulMatrix_16x16_16x16(int (&dst)[16][16], const int (&a)[16][16], const int (&b)[16][16])
+	{
+		// Calculate each row in groups of four columns.
+		mulMatrixSquare(dst, a, b);
+	}
+
+
+	/// @brief Multiply two 32x32 int matrices using SIMD instructions.
+	///
+	/// @param dst is the destination matrix, distinct from both inputs.
+	/// @param a is the first matrix.
+	/// @param b is the second matrix.
+	///
+	inline void mulMatrix_32x32_32x32(int (&dst)[32][32], const int (&a)[32][32], const int (&b)[32][32])
+	{
+		// Calculate each row in groups of four columns.
+		mulMatrixSquare(dst, a, b);
+	}
+
+}

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 
 namespace sel {
 
@@ -124,6 +126,10 @@ namespace sel {
 	/// @brief Representation of a 2x3 integer matrix.
 	///
 	using Mat2x3i = Mat2x3<int>;
+
+	/// @brief Representation of a 2x3 signed 8-bit integer matrix.
+	///
+	using Mat2x3i8 = Mat2x3<std::int8_t>;
 
 	/// @brief Representation of a 2x3 float matrix.
 	///

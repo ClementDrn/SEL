@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 #include <cstddef>
 
 
@@ -3372,6 +3374,10 @@ namespace sel {
 	/// @brief Representation of a 32x32 integer matrix.
 	///
 	using Mat32x32i = Mat32x32<int>;
+
+	/// @brief Representation of a 32x32 signed 8-bit integer matrix.
+	///
+	using Mat32x32i8 = Mat32x32<std::int8_t>;
 
 	/// @brief Representation of a 32x32 float matrix.
 	///
