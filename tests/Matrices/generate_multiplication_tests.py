@@ -127,6 +127,20 @@ def int4_fixtures(rows, inner, columns):
                                 for i in range(rows * inner)], [
         Fraction(7 if i % 3 else -8) for i in range(inner * columns)]
 
+    if rows == inner == columns and rows in (4, 8, 16, 32):
+        # Distinguish adjacent nibbles and columns across every eight-column
+        # boundary. Expectations still use the independent exact product below.
+        left = [wrap_int4(Fraction(row * 5 + k * 3 + (k // 2) * 7))
+                for row in range(rows) for k in range(inner)]
+        right = [wrap_int4(Fraction(k * 7 + column * 5 + (column // 8) * 3))
+                 for k in range(inner) for column in range(columns)]
+        yield 'nibble and column patterns', left, right
+        permutation = [Fraction(column == (k + 7) % columns)
+                       for k in range(inner) for column in range(columns)]
+        yield 'cross-group nibble permutation', left, permutation
+        # -1 has all four bits set; long dot products also exercise wrapping.
+        yield 'all nibble bits set', [Fraction(-1)] * (rows * inner), [Fraction(-1)] * (inner * columns)
+
 
 def int8_fixtures(rows, inner, columns):
     # Narrow inputs before computing expectations, rather than narrowing a result

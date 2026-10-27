@@ -43,6 +43,8 @@ namespace sel {
 
 namespace sel::utils {
 
+	struct PackedInt4Access;
+
 	/// @brief Shared storage and operations for the fixed-shape int4 specializations.
 	/// Elements use row-major order, with even indices in the low nibble.
 	template <std::size_t Rows, std::size_t Columns, class Matrix>
@@ -129,6 +131,8 @@ namespace sel::utils {
 		}
 
 	private:
+		friend struct PackedInt4Access;
+
 		constexpr int4::reference element(std::size_t index)
 		{
 			return int4::reference(m_data[index / 2], static_cast<unsigned int>(index % 2) * 4);
@@ -141,6 +145,22 @@ namespace sel::utils {
 
 		// No padding between rows; an unused final high nibble stays zero.
 		unsigned char m_data[(Rows * Columns + 1) / 2] = {};
+	};
+
+	/// @brief Internal byte access for packed kernels; no public matrix data API.
+	struct PackedInt4Access
+	{
+		template <std::size_t Rows, std::size_t Columns, class Matrix>
+		static const unsigned char* data(const PackedInt4Matrix<Rows, Columns, Matrix>& matrix)
+		{
+			return matrix.m_data;
+		}
+
+		template <std::size_t Rows, std::size_t Columns, class Matrix>
+		static unsigned char* data(PackedInt4Matrix<Rows, Columns, Matrix>& matrix)
+		{
+			return matrix.m_data;
+		}
 	};
 
 }

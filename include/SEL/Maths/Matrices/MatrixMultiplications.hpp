@@ -24,16 +24,25 @@
 	#include "SEL/Maths/Matrices/Intrinsic/Int32Mul.hpp"
 	#include "SEL/Maths/Matrices/Intrinsic/Float32Mul.hpp"
 	#include "SEL/Maths/Matrices/Intrinsic/Int8Mul.hpp"
+	#include "SEL/Maths/Matrices/Intrinsic/Int4Mul.hpp"
 #endif
 
 
 namespace sel::utils {
 
 	/// @brief Multiply packed int4 matrices, wrapping each result modulo 16.
-	/// Uses the portable implementation with either backend configuration.
+	/// Selected square sizes use SIMD when the intrinsic backend is enabled.
 	template <std::size_t Rows, std::size_t Inner, std::size_t Columns, class Product, class Left, class Right>
 	inline void mulMatrixInt4(Product& dst, const Left& a, const Right& b)
 	{
+#ifdef SEL_INTRINSIC_MATRIX_MUL
+		if constexpr (Rows == Inner && Inner == Columns
+			&& (Rows == 4 || Rows == 8 || Rows == 16 || Rows == 32))
+		{
+			mulMatrixInt4Simd<Rows>(dst, a, b);
+			return;
+		}
+#endif
 		// Current shapes have at most 32 terms, each with magnitude at most 64.
 		static_assert(Inner <= 32, "Review int4 accumulator bounds for larger shapes");
 		for (std::size_t row = 0; row < Rows; ++row)
