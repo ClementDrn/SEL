@@ -130,7 +130,8 @@ namespace matrixTests
         static_assert(std::is_same_v<decltype(left * right), Product>);
         result = left * right;
 
-        if constexpr (std::is_same_v<T, sel::Int4> && (Rows * Columns) % 2 != 0)
+        if constexpr ((std::is_same_v<T, sel::Int4> || std::is_same_v<T, sel::Float4E2M1>)
+                      && (Rows * Columns) % 2 != 0)
         {
             std::array<unsigned char, sizeof(Product)> bytes{};
             std::memcpy(bytes.data(), &result, sizeof(Product));
@@ -143,7 +144,12 @@ namespace matrixTests
             {
                 CAPTURE(row, column);
                 const auto value = expected[row * Columns + column];
-                if constexpr (std::is_floating_point_v<T>)
+                if constexpr (sel::utils::isLowPrecisionFloat<T>)
+                {
+                    // The generator emits independently computed encoding bytes.
+                    CHECK(result[row][column].bits() == static_cast<unsigned int>(value));
+                }
+                else if constexpr (std::is_floating_point_v<T>)
                 {
                     // Scale the rounding allowance by the dot product's magnitudes,
                     // so cancellation near zero still has a meaningful tolerance.

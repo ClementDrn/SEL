@@ -8,6 +8,8 @@ from pathlib import Path
 import random
 import re
 
+from low_precision_reference import decode, encode, levels, product_bits
+
 
 def multiply(left, right, rows, inner, columns):
     """Compute row-by-column products without using SEL or floating-point math."""
@@ -161,6 +163,30 @@ def int8_fixtures(rows, inner, columns):
         Fraction(127 if i % 3 else -128) for i in range(inner * columns)]
 
 
+def low_precision_fixtures(rows, inner, columns, exponent_bits, mantissa_bits):
+    """Quantize shared fixtures and add cases exposing intermediate storage rounding."""
+    for label, left, right in fixtures(rows, inner, columns, False):
+        yield label, [decode(encode(x, exponent_bits, mantissa_bits), exponent_bits, mantissa_bits)
+                     for x in left], [
+                         decode(encode(x, exponent_bits, mantissa_bits), exponent_bits, mantissa_bits)
+                         for x in right]
+    maximum = levels(exponent_bits, mantissa_bits)[-1]
+    yield "saturation", [maximum] * (rows * inner), [maximum] * (inner * columns)
+    if inner >= 3:
+        # Products temporarily exceed the storage format, then cancel to one.
+        left = [maximum if k < 2 else Fraction(k == 2)
+                for row in range(rows) for k in range(inner)]
+        right = [Fraction(2 if k == 0 else -1 if k == 1 else k == 2)
+                 for k in range(inner) for column in range(columns)]
+        yield "wide accumulator cancellation", left, right
+        if exponent_bits == 5:
+            left = [maximum if k == 0 else -maximum if k == 2 else Fraction(k == 1)
+                    for row in range(rows) for k in range(inner)]
+            right = [maximum if k in (0, 2) else Fraction(k == 1)
+                     for k in range(inner) for column in range(columns)]
+            yield "FP32 accumulation rounding", left, right
+
+
 def generate(shapes, extra_products=()):
     lines = ['// Generated file. Edit generate_multiplication_tests.py instead.',
              '#include "MultiplicationChecks.hpp"',
@@ -175,25 +201,31 @@ def generate(shapes, extra_products=()):
         combinations += 1
         name = f"{rows}x{inner} * {inner}x{columns} -> {rows}x{columns}"
         lines += [f'TEMPLATE_TEST_CASE("{name}", "[matrix][multiplication]",',
-                  '                   sel::Int4, std::int8_t, int, unsigned int, float, double)', '{']
-        for group in ('int4', 'int8', 'unsigned', 'signed'):
+                  '                   sel::Int4, std::int8_t, int, unsigned int, float, double, sel::Float4E2M1, sel::Float8E4M3, sel::Float8E5M2)', '{']
+        for group in ('int4', 'int8', 'fp4', 'e4m3', 'e5m2', 'unsigned', 'signed'):
             condition = {'int4': 'if constexpr (std::is_same_v<TestType, sel::Int4>)',
                          'int8': 'else if constexpr (std::is_same_v<TestType, std::int8_t>)',
+                         'fp4': 'else if constexpr (std::is_same_v<TestType, sel::Float4E2M1>)',
+                         'e4m3': 'else if constexpr (std::is_same_v<TestType, sel::Float8E4M3>)',
+                         'e5m2': 'else if constexpr (std::is_same_v<TestType, sel::Float8E5M2>)',
                          'unsigned': 'else if constexpr (std::is_unsigned_v<TestType>)',
                          'signed': 'else'}[group]
             lines += [f'    {condition}', '    {']
-            cases = (int4_fixtures(rows, inner, columns) if group == 'int4'
+            low_format = {'fp4': (2, 1), 'e4m3': (4, 3), 'e5m2': (5, 2)}.get(group)
+            cases = (low_precision_fixtures(rows, inner, columns, *low_format) if low_format
+                     else int4_fixtures(rows, inner, columns) if group == 'int4'
                      else int8_fixtures(rows, inner, columns) if group == 'int8'
                      else fixtures(rows, inner, columns, group == 'unsigned'))
             for fixture_index, (label, left, right) in enumerate(cases):
-                expected = verified_product(left, right, rows, inner, columns)
+                expected = (product_bits(left, right, rows, inner, columns, *low_format) if low_format
+                            else verified_product(left, right, rows, inner, columns))
                 if group == 'int4':
                     expected = list(map(wrap_int4, expected))
                 elif group == 'int8':
                     expected = list(map(wrap_int8, expected))
                 # Fractional cases apply only to floating-point instantiations.
                 indent = '        '
-                if label == 'fractional':
+                if label == 'fractional' and not low_format:
                     lines += ['        if constexpr (std::is_floating_point_v<TestType>)',
                               '        {']
                     indent += '    '
@@ -207,7 +239,7 @@ def generate(shapes, extra_products=()):
                     f'{indent}    sel::Matrix<TestType, {rows}, {inner}>, sel::Matrix<TestType, {inner}, {columns}>,',
                     f'{indent}    sel::Matrix<TestType, {rows}, {columns}>, {rows}, {inner}, {columns}>(',
                     f'{indent}    "{label}", left{fixture_index}, right{fixture_index}, expected{fixture_index});']
-                if label == 'fractional':
+                if label == 'fractional' and not low_format:
                     lines.append('        }')
             lines.append('    }')
         lines += ['}', '']

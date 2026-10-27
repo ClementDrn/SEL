@@ -4,6 +4,9 @@
 #include <cstdint>
 #include <type_traits>
 #include "PackedInt4Matrix.hpp"
+#include "PackedFloat4Matrix.hpp"
+#include "../Float8E4M3.hpp"
+#include "../Float8E5M2.hpp"
 
 namespace sel::utils {
 	struct UninitializedMatrixTag {};
@@ -12,7 +15,7 @@ namespace sel::utils {
 namespace sel {
 
 	/// @brief Fixed-size row-major matrix with natural scalar alignment.
-	/// @tparam T Element type; Int4 uses tightly packed nibble storage.
+	/// @tparam T Element type; Int4 and Float4E2M1 use tightly packed nibble storage.
 	/// @tparam Rows Positive number of rows, known at compile time.
 	/// @tparam Columns Positive number of columns, known at compile time.
 	template <class T, std::size_t Rows, std::size_t Columns>
@@ -95,6 +98,31 @@ namespace sel {
 		static constexpr std::size_t column_count = Columns;
 		using Base::Base;
 		constexpr Matrix() = default;
+
+	private:
+		template <class U, std::size_t R, std::size_t K, std::size_t C>
+		friend Matrix<U, R, C> operator*(const Matrix<U, R, K>&, const Matrix<U, K, C>&);
+		// Packed element writes read the adjacent nibble; initialize all bytes,
+		// including any final padding nibble, before multiplication fills them.
+		explicit Matrix(utils::UninitializedMatrixTag) : Base() {}
+	};
+
+	/// @brief Packed four-bit floating-point matrix, with no padding between rows.
+	/// Mutable indexing returns Float4E2M1::reference; const indexing returns a value.
+	/// Storage occupies (Rows * Columns + 1) / 2 bytes; unused final padding is zero.
+	/// Multiplication accumulates in FP32 and converts each completed output to FP4.
+	template <std::size_t Rows, std::size_t Columns>
+	class Matrix<Float4E2M1, Rows, Columns>
+		: public utils::PackedFloat4Matrix<Rows, Columns, Matrix<Float4E2M1, Rows, Columns>>
+	{
+		static_assert(Rows > 0 && Columns > 0, "Matrix dimensions must be positive");
+		using Base = utils::PackedFloat4Matrix<Rows, Columns, Matrix<Float4E2M1, Rows, Columns>>;
+	public:
+		using value_type = Float4E2M1;
+		static constexpr std::size_t row_count = Rows;
+		static constexpr std::size_t column_count = Columns;
+		using Base::Base;
+		Matrix() = default;
 
 	private:
 		template <class U, std::size_t R, std::size_t K, std::size_t C>

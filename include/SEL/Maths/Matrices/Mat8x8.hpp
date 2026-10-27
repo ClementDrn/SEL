@@ -19,4 +19,15 @@ namespace sel {
 	/// @brief 8x8 matrix of unsigned int values.
 	using Mat8x8u = Mat8x8<unsigned int>;
 
+	/// @brief 8x8 matrix of packed Float4E2M1 values.
+	using Mat8x8f4 = Mat8x8<Float4E2M1>;
+	/// @brief 8x8 matrix of Float8E4M3 values (the default FP8 format).
+	using Mat8x8f8 = Mat8x8<Float8E4M3>;
+	/// @brief 8x8 matrix of packed Float4E2M1 values, with an explicit format name.
+	using Mat8x8f4e2m1 = Mat8x8<Float4E2M1>;
+	/// @brief 8x8 matrix of Float8E4M3 values, with an explicit format name.
+	using Mat8x8f8e4m3 = Mat8x8<Float8E4M3>;
+	/// @brief 8x8 matrix of Float8E5M2 values.
+	using Mat8x8f8e5m2 = Mat8x8<Float8E5M2>;
+
 }

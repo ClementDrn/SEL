@@ -168,6 +168,18 @@ namespace sel::utils {
 					else
 						dst[row][column] = static_cast<std::int8_t>(value < 128u ? int(value) : int(value) - 256);
 				}
+				else if constexpr (isLowPrecisionFloat<T>)
+				{
+					// Materialize FP32 products and sums: no intermediate quantization
+					// or fused multiply-add, and preserve inner-coordinate order.
+					volatile float value = a[row][0].value() * b[0][column].value();
+					for (std::size_t inner = 1; inner < Inner; ++inner)
+					{
+						volatile float product = a[row][inner].value() * b[inner][column].value();
+						value = value + product;
+					}
+					dst[row][column] = T(value);
+				}
 				else
 				{
 					dst[row][column] = a[row][0] * b[0][column];
@@ -185,6 +197,11 @@ namespace sel {
 	/// Dimensions are checked by deduction; operands must have the same value type.
 	/// Define SEL_INTRINSIC_MATRIX_MUL with SSE4.1 enabled to select SIMD kernels.
 	/// Ordinary signed integers require representable intermediate arithmetic.
+	/// FP4/FP8 operands use ordered FP32 products and accumulation in both backends;
+	/// each completed output is rounded and saturated once to the input format.
+	/// @param lhs Left operand, with Rows rows and Inner columns.
+	/// @param rhs Right operand, with Inner rows and Columns columns.
+	/// @return A Rows-by-Columns matrix with the same element type as the operands.
 	template <class T, std::size_t Rows, std::size_t Inner, std::size_t Columns>
 	inline Matrix<T, Rows, Columns> operator*(const Matrix<T, Rows, Inner>& lhs,
 		const Matrix<T, Inner, Columns>& rhs)
@@ -193,4 +210,5 @@ namespace sel {
 		utils::multiplyMatrices(result, lhs, rhs);
 		return result;
 	}
+
 }
