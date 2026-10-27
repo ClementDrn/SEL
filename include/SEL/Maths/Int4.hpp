@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ostream>
 #include <type_traits>
 
 namespace sel {
@@ -24,6 +25,12 @@ namespace sel {
 		}
 
 		constexpr explicit operator int() const { return value(); }
+
+		/// @brief Print the signed numeric value using the stream's integer formatting.
+		friend std::ostream& operator<<(std::ostream& stream, Int4 value)
+		{
+			return stream << value.value();
+		}
 
 		constexpr Int4& operator+=(Int4 rhs) { return *this = Int4(value() + rhs.value()); }
 		constexpr Int4& operator-=(Int4 rhs) { return *this = Int4(value() - rhs.value()); }
