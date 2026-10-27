@@ -19,7 +19,6 @@ from generate_benchmarks import VALUE_TYPES, discover_products
 
 
 BACKENDS = ('scalar', 'simd')
-EXPLICIT_SIMD_TYPES = ('int8', 'int', 'float')
 SAMPLE_COLUMNS = [
     'shape', 'type', 'explicit_simd', 'ns_per_product',
     'products', 'elapsed_ns', 'checksum',
@@ -27,10 +26,15 @@ SAMPLE_COLUMNS = [
 
 
 def uses_intrinsics(shape, value_type):
-    """int4 has explicit kernels only for four same-size square products."""
-    return value_type in EXPLICIT_SIMD_TYPES or (
-        value_type == 'int4' and shape in {
-            '{}x{}*{}x{}'.format(size, size, size, size) for size in (4, 8, 16, 32)})
+    """Mirror shape eligibility, including scalar-only narrow/odd-width products."""
+    left, right = shape.split('*')
+    rows, inner = map(int, left.split('x'))
+    _, columns = map(int, right.split('x'))
+    return (value_type == 'int8'
+            or (value_type in ('float', 'int') and
+                (columns >= 4 or (2 <= rows <= 4 and 2 <= inner <= 4 and columns == 2
+                                  and (inner == 2 or (value_type == 'float' and inner == 4 and rows < 4)))))
+            or (value_type == 'int4' and inner % 2 == 0 and columns % 2 == 0 and columns >= 4))
 
 
 def positive_int(value):
@@ -53,7 +57,7 @@ def expected_cases():
     """Discover required CSV keys using the generator's shape/type definitions."""
     headers = Path(__file__).resolve().parents[1] / 'include/SEL/Maths/Matrices'
     cases = set()
-    for rows, inner, columns in discover_products(headers):
+    for rows, inner, columns in discover_products(headers, rectangular=True):
         shape = '{}x{}*{}x{}'.format(rows, inner, inner, columns)
         for _, label in VALUE_TYPES:
             cases.add((shape, label))

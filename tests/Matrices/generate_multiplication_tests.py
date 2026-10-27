@@ -2,6 +2,7 @@
 """Generate deterministic Catch2 fixtures using exact, independent arithmetic."""
 
 import argparse
+import json
 from fractions import Fraction
 from pathlib import Path
 import random
@@ -160,52 +161,56 @@ def int8_fixtures(rows, inner, columns):
         Fraction(127 if i % 3 else -128) for i in range(inner * columns)]
 
 
-def generate(shapes):
+def generate(shapes, extra_products=()):
     lines = ['// Generated file. Edit generate_multiplication_tests.py instead.',
              '#include "MultiplicationChecks.hpp"',
              '#include "Int4Checks.hpp"',
              '#include <catch2/catch_template_test_macros.hpp>', '']
     combinations = 0
-    for rows, inner in sorted(shapes):
-        for right_rows, columns in sorted(shapes):
-            if right_rows != inner or (rows, columns) not in shapes:
-                continue
-            combinations += 1
-            name = f"{rows}x{inner} * {inner}x{columns} -> {rows}x{columns}"
-            lines += [f'TEMPLATE_TEST_CASE("{name}", "[matrix][multiplication]",',
-                      '                   sel::int4, std::int8_t, int, unsigned int, float, double)', '{']
-            for group in ('int4', 'int8', 'unsigned', 'signed'):
-                condition = {'int4': 'if constexpr (std::is_same_v<TestType, sel::int4>)',
-                             'int8': 'else if constexpr (std::is_same_v<TestType, std::int8_t>)',
-                             'unsigned': 'else if constexpr (std::is_unsigned_v<TestType>)',
-                             'signed': 'else'}[group]
-                lines += [f'    {condition}', '    {']
-                cases = (int4_fixtures(rows, inner, columns) if group == 'int4'
-                         else int8_fixtures(rows, inner, columns) if group == 'int8'
-                         else fixtures(rows, inner, columns, group == 'unsigned'))
-                for label, left, right in cases:
-                    expected = verified_product(left, right, rows, inner, columns)
-                    if group == 'int4':
-                        expected = list(map(wrap_int4, expected))
-                    elif group == 'int8':
-                        expected = list(map(wrap_int8, expected))
-                    # Fractional cases apply only to floating-point instantiations.
-                    indent = '        '
-                    if label == 'fractional':
-                        lines += ['        if constexpr (std::is_floating_point_v<TestType>)',
-                                  '        {']
-                        indent += '    '
-                    lines += [
-                        f'{indent}matrixTests::checkProduct<TestType,',
-                        f'{indent}    sel::Mat{rows}x{inner}<TestType>, sel::Mat{inner}x{columns}<TestType>,',
-                        f'{indent}    sel::Mat{rows}x{columns}<TestType>, {rows}, {inner}, {columns}>(',
-                        f'{indent}    "{label}", {cpp_values(left)},',
-                        f'{indent}    {cpp_values(right)},',
-                        f'{indent}    {cpp_values(expected)});']
-                    if label == 'fractional':
-                        lines.append('        }')
-                lines.append('    }')
-            lines += ['}', '']
+    products = {(rows, inner, columns) for rows, inner in shapes
+                for right_rows, columns in shapes
+                if right_rows == inner and (rows, columns) in shapes}
+    products.update(tuple(product) for product in extra_products)
+    for rows, inner, columns in sorted(products):
+        combinations += 1
+        name = f"{rows}x{inner} * {inner}x{columns} -> {rows}x{columns}"
+        lines += [f'TEMPLATE_TEST_CASE("{name}", "[matrix][multiplication]",',
+                  '                   sel::Int4, std::int8_t, int, unsigned int, float, double)', '{']
+        for group in ('int4', 'int8', 'unsigned', 'signed'):
+            condition = {'int4': 'if constexpr (std::is_same_v<TestType, sel::Int4>)',
+                         'int8': 'else if constexpr (std::is_same_v<TestType, std::int8_t>)',
+                         'unsigned': 'else if constexpr (std::is_unsigned_v<TestType>)',
+                         'signed': 'else'}[group]
+            lines += [f'    {condition}', '    {']
+            cases = (int4_fixtures(rows, inner, columns) if group == 'int4'
+                     else int8_fixtures(rows, inner, columns) if group == 'int8'
+                     else fixtures(rows, inner, columns, group == 'unsigned'))
+            for fixture_index, (label, left, right) in enumerate(cases):
+                expected = verified_product(left, right, rows, inner, columns)
+                if group == 'int4':
+                    expected = list(map(wrap_int4, expected))
+                elif group == 'int8':
+                    expected = list(map(wrap_int8, expected))
+                # Fractional cases apply only to floating-point instantiations.
+                indent = '        '
+                if label == 'fractional':
+                    lines += ['        if constexpr (std::is_floating_point_v<TestType>)',
+                              '        {']
+                    indent += '    '
+                # Static data avoids thousands of stack-array initializations in
+                # each Catch2 function, keeping optimized builds manageable.
+                lines += [
+                    f'{indent}static constexpr std::array<long double, {rows * inner}> left{fixture_index} = {cpp_values(left)};',
+                    f'{indent}static constexpr std::array<long double, {inner * columns}> right{fixture_index} = {cpp_values(right)};',
+                    f'{indent}static constexpr std::array<long double, {rows * columns}> expected{fixture_index} = {cpp_values(expected)};',
+                    f'{indent}matrixTests::checkProduct<TestType,',
+                    f'{indent}    sel::Matrix<TestType, {rows}, {inner}>, sel::Matrix<TestType, {inner}, {columns}>,',
+                    f'{indent}    sel::Matrix<TestType, {rows}, {columns}>, {rows}, {inner}, {columns}>(',
+                    f'{indent}    "{label}", left{fixture_index}, right{fixture_index}, expected{fixture_index});']
+                if label == 'fractional':
+                    lines.append('        }')
+            lines.append('    }')
+        lines += ['}', '']
     if combinations == 0:
         raise ValueError("No compatible matrix shapes found")
     for rows, columns in sorted(shapes):
@@ -239,7 +244,8 @@ def main():
     assert wrap_int4(Fraction(8)) == -8
     assert wrap_int4(Fraction(-9)) == 7
     assert list(map(wrap_int4, verified_product([7, -8, 1, 2], [1, 2, 3, 4], 2, 2, 2))) == [-1, -2, 7, -6]
-    source, combinations = generate(shapes)
+    extra_products = json.loads(Path(__file__).with_name("rectangular_products.json").read_text())
+    source, combinations = generate(shapes, extra_products)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(source, encoding='utf-8')
     print(f'Generated {combinations} matrix multiplication combinations from {len(shapes)} shapes')

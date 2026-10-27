@@ -19,7 +19,7 @@ add_custom_command(
     OUTPUT "${benchmark_source}"
     COMMAND Python3::Interpreter "${CMAKE_CURRENT_SOURCE_DIR}/generate_benchmarks.py"
             --headers "${matrix_headers_dir}" --output "${benchmark_source}"
-    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/generate_benchmarks.py" "${matrix_shapes}" ${matrix_headers}
+    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/generate_benchmarks.py" "${matrix_shapes}" ${matrix_headers} "${PROJECT_SOURCE_DIR}/tests/Matrices/rectangular_products.json"
     COMMENT "Generating matrix multiplication benchmarks"
     VERBATIM
 )

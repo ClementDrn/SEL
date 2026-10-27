@@ -255,11 +255,9 @@ namespace matrixBench
             }
         }
 
-        // Int4 uses explicit SIMD only for the selected same-size square products.
+        // Share the kernel's compile-time eligibility to report actual dispatch.
         constexpr bool explicitSimd = SEL_BENCH_EXPLICIT_SIMD
-            && (std::is_same_v<T, std::int8_t> || std::is_same_v<T, int> || std::is_same_v<T, float>
-                || (std::is_same_v<T, sel::Int4> && Rows == Inner && Inner == Columns
-                    && (Rows == 4 || Rows == 8 || Rows == 16 || Rows == 32)));
+            && sel::utils::matrixHasSimd<T, Rows, Inner, Columns>;
         const std::size_t count = batches * batchSize;
         std::cout << Rows << 'x' << Inner << '*' << Inner << 'x' << Columns << ',' << type
                   << ',' << explicitSimd << ',' << std::setprecision(12)

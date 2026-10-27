@@ -1,19 +1,14 @@
-// Intrinsic matrix multiplications for 32-bit float values.
+// Specialized small matrix kernels retained after generic-backend comparisons.
 #pragma once
 
 #include <immintrin.h>
-#include <cstring>
 #include <cstddef>
-
+#include <cstring>
 
 namespace sel::utils {
 
-	// Public matrices require only scalar alignment, including in arrays.
-	// Use unaligned vector loads/stores for matrix data and local buffers.
-
-	// --- 1x2 result ----------------------------------------------------------
-
-    inline void mulMatrix_1x2_2x2(float* dst, const float* a, const float* b)
+	/// @brief Multiply 1x2 by 2x2 using the small float SIMD kernel.
+	inline void mulMatrix_1x2_2x2(float* dst, const float* a, const float* b)
     {
         // Result is 1x2
         __m128 vResult;     // 4 floats
@@ -35,44 +30,8 @@ namespace sel::utils {
         std::memcpy(dst, tmp, sizeof(float) * 2);
     }
 
-
-    inline void mulMatrix_1x3_3x2(float* dst, const float* a, const float* b)
-    {
-		// Result is 1x2
-		// First we do 1x2_2x2, then 1x1_1x2
-        __m128 vResult, vResult1, vResult2;
-
-        vResult1 = _mm_mul_ps(
-            _mm_set_ps(a[1], a[1], a[0], a[0]),
-            _mm_loadu_ps(b)      // 3, 2, 1, 0
-        );
-
-        // Add 0 & 2 and 1 & 3
-		// Note: Computations are done twice.
-        vResult1 = _mm_add_ps(
-            vResult1,
-            _mm_shuffle_ps(vResult1, vResult1, _MM_SHUFFLE(1, 0, 3, 2))
-        );
-
-		// 1x1_1x2
-		vResult2 = _mm_mul_ps(
-			_mm_set_ps(0.0f, 0.0f, a[2], a[2]),		// Putting numbers at the end, will place them at the beginning of the returned array.
-            _mm_set_ps(0.0f, 0.0f, b[5], b[4])
-		);
-		
-		// Add the two sub results
-		vResult = _mm_add_ps(
-			vResult1,
-			vResult2
-		);
-
-		float tmp[4];
-        _mm_storeu_ps(tmp, vResult);
-        std::memcpy(dst, tmp, sizeof(float) * 2);
-    }
-
-
-    inline void mulMatrix_1x4_4x2(float* dst, const float* a, const float* b)
+	/// @brief Multiply 1x4 by 4x2 using the small float SIMD kernel.
+	inline void mulMatrix_1x4_4x2(float* dst, const float* a, const float* b)
     {
 		// Result is 1x2
         // Matrices are cut in half, 1x2 for a and 2x2 for b.
@@ -105,9 +64,7 @@ namespace sel::utils {
         std::memcpy(dst, tmp, sizeof(float) * 2);
 	}
 
-
-	// --- 2x2 result ----------------------------------------------------------
-
+	/// @brief Multiply 2x2 by 2x2 using the small float SIMD kernel.
 	inline void mulMatrix_2x2_2x2(float* dst, const float* a, const float* b)
 	{
         // Result is 2x2
@@ -129,43 +86,24 @@ namespace sel::utils {
 		_mm_storeu_ps(dst, vResult);
 	}
 
-
-    inline void mulMatrix_2x3_3x2(float* dst, const float* a, const float* b)
-    {
-		// Result is 2x2
-        mulMatrix_1x3_3x2(&dst[0], &a[0], b);
-        mulMatrix_1x3_3x2(&dst[2], &a[3], b);
-    }
-
-
-    inline void mulMatrix_2x4_4x2(float* dst, const float* a, const float* b)
+	/// @brief Multiply 2x4 by 4x2 using the small float SIMD kernel.
+	inline void mulMatrix_2x4_4x2(float* dst, const float* a, const float* b)
     {
 		// Result is 2x2
         mulMatrix_1x4_4x2(&dst[0], &a[0], b);
         mulMatrix_1x4_4x2(&dst[2], &a[4], b);
     }
 
-
-	// --- 3x2 result ----------------------------------------------------------
-
-    inline void mulMatrix_3x2_2x2(float* dst, const float* a, const float* b)
+	/// @brief Multiply 3x2 by 2x2 using the small float SIMD kernel.
+	inline void mulMatrix_3x2_2x2(float* dst, const float* a, const float* b)
     {
         // Result is 3x2
         mulMatrix_2x2_2x2(&dst[0], &a[0], b);
         mulMatrix_1x2_2x2(&dst[4], &a[4], b);
     }
 
-
-    inline void mulMatrix_3x3_3x2(float* dst, const float* a, const float* b)
-    {
-        // Result is 3x2
-        mulMatrix_1x3_3x2(&dst[0], &a[0], b);
-        mulMatrix_1x3_3x2(&dst[2], &a[3], b);
-        mulMatrix_1x3_3x2(&dst[4], &a[6], b);
-    }
-
-
-    inline void mulMatrix_3x4_4x2(float* dst, const float* a, const float* b)
+	/// @brief Multiply 3x4 by 4x2 using the small float SIMD kernel.
+	inline void mulMatrix_3x4_4x2(float* dst, const float* a, const float* b)
     {
         // Result is 3x2
         mulMatrix_1x4_4x2(&dst[0], &a[0], b);
@@ -173,220 +111,16 @@ namespace sel::utils {
         mulMatrix_1x4_4x2(&dst[4], &a[8], b);
     }
 
-
-	// --- 4x2 result ----------------------------------------------------------
-
-    inline void mulMatrix_4x2_2x2(float* dst, const float* a, const float* b)
+	/// @brief Multiply 4x2 by 2x2 using the small float SIMD kernel.
+	inline void mulMatrix_4x2_2x2(float* dst, const float* a, const float* b)
     {
 		// Result is 4x2
 		mulMatrix_2x2_2x2(&dst[0], &a[0], b);
 		mulMatrix_2x2_2x2(&dst[4], &a[4], b);
     }
 
-
-    inline void mulMatrix_4x3_3x2(float* dst, const float* a, const float* b)
-    {
-        // Result is 4x2
-        mulMatrix_1x3_3x2(&dst[0], &a[0], b);
-        mulMatrix_1x3_3x2(&dst[2], &a[3], b);
-        mulMatrix_1x3_3x2(&dst[4], &a[6], b);
-        mulMatrix_1x3_3x2(&dst[6], &a[9], b);
-    }
-
-
-    inline void mulMatrix_4x4_4x2(float* dst, const float* a, const float* b)
-    {
-        // Result is 4x2
-        mulMatrix_1x4_4x2(&dst[0], &a[0], b);
-        mulMatrix_1x4_4x2(&dst[2], &a[4], b);
-        mulMatrix_1x4_4x2(&dst[4], &a[8], b);
-        mulMatrix_1x4_4x2(&dst[6], &a[12], b);
-    }
-
-
-	// --- 1x3 result ----------------------------------------------------------
-
-    inline void mulMatrix_1x2_2x3(float* dst, const float* a, const float* b)
-    {
-        // Result is 1x3
-        __m128 vB, vResult;
-
-        // Row 0 of b
-        vB = _mm_set_ps(b[0], b[1], b[2], 0.0f);
-        vResult = _mm_mul_ps(
-            _mm_load_ps1(&a[0]),
-            vB
-        );
-        // Row 1 of b
-        vB = _mm_set_ps(b[3], b[4], b[5], 0.0f);
-        vResult = _mm_add_ps(vResult, _mm_mul_ps(
-            _mm_load_ps1(&a[1]),
-            vB
-        ));
-
-        float tmp[4];
-        // Reverse lanes without imposing alignment on the temporary.
-        _mm_storeu_ps(tmp, _mm_shuffle_ps(vResult, vResult, _MM_SHUFFLE(0, 1, 2, 3)));
-        std::memcpy(dst, tmp, sizeof(float) * 3);
-    }
-
-
-    inline void mulMatrix_1x3_3x3(float* dst, const float* a, const float* b)
-    {
-		// Result is 1x3
-		__m128 vB, vResult;
-
-        // Row 0 of b
-        vB = _mm_set_ps(b[0], b[1], b[2], 0.0f);
-        vResult = _mm_mul_ps(
-            _mm_load_ps1(&a[0]),
-            vB
-        );
-        // Row 1 of b
-		vB = _mm_set_ps(b[3], b[4], b[5], 0.0f);
-        vResult = _mm_add_ps(vResult, _mm_mul_ps(
-            _mm_load_ps1(&a[1]),
-            vB
-        ));
-        // Row 2 of b
-		vB = _mm_set_ps(b[6], b[7], b[8], 0.0f);
-        vResult = _mm_add_ps(vResult, _mm_mul_ps(
-            _mm_load_ps1(&a[2]),
-            vB
-        ));
-		
-		float tmp[4];
-		// Reverse lanes without imposing alignment on the temporary.
-		_mm_storeu_ps(tmp, _mm_shuffle_ps(vResult, vResult, _MM_SHUFFLE(0, 1, 2, 3)));
-		std::memcpy(dst, tmp, sizeof(float) * 3);
-    }
-
-
-    inline void mulMatrix_1x4_4x3(float* dst, const float* a, const float* b)
-    {
-		// Result is 1x3
-		__m128 vB, vResult;
-
-		// Row 0 of b
-		vB = _mm_set_ps(b[0], b[1], b[2], 0.0f);
-		vResult = _mm_mul_ps(
-			_mm_load_ps1(&a[0]),
-			vB
-		);
-		// Row 1 of b
-		vB = _mm_set_ps(b[3], b[4], b[5], 0.0f);
-		vResult = _mm_add_ps(vResult, _mm_mul_ps(
-			_mm_load_ps1(&a[1]),
-			vB
-		));
-		// Row 2 of b
-		vB = _mm_set_ps(b[6], b[7], b[8], 0.0f);
-		vResult = _mm_add_ps(vResult, _mm_mul_ps(
-			_mm_load_ps1(&a[2]),
-			vB
-		));
-		// Row 3 of b
-		vB = _mm_set_ps(b[9], b[10], b[11], 0.0f);
-		vResult = _mm_add_ps(vResult, _mm_mul_ps(
-			_mm_load_ps1(&a[3]),
-			vB
-		));
-
-		float tmp[4];
-		// Reverse lanes without imposing alignment on the temporary.
-		_mm_storeu_ps(tmp, _mm_shuffle_ps(vResult, vResult, _MM_SHUFFLE(0, 1, 2, 3)));
-		std::memcpy(dst, tmp, sizeof(float) * 3);
-    }
-
-
-	// --- 2x3 result ----------------------------------------------------------
-
-    inline void mulMatrix_2x2_2x3(float* dst, const float* a, const float* b)
-    {
-        // Result is 2x3 
-        mulMatrix_1x2_2x3(&dst[0], &a[0], b);
-        mulMatrix_1x2_2x3(&dst[3], &a[2], b);
-    }
-
-
-    inline void mulMatrix_2x3_3x3(float* dst, const float* a, const float* b)
-    {
-        // Result is 2x3 
-        mulMatrix_1x3_3x3(&dst[0], &a[0], b);
-        mulMatrix_1x3_3x3(&dst[3], &a[3], b);
-    }
-
-
-	inline void mulMatrix_2x4_4x3(float* dst, const float* a, const float* b)
-	{
-		// Result is 2x3 
-		mulMatrix_1x4_4x3(&dst[0], &a[0], b);
-		mulMatrix_1x4_4x3(&dst[3], &a[4], b);
-	}
-
-
-	// --- 3x3 result ----------------------------------------------------------
-
-	inline void mulMatrix_3x2_2x3(float* dst, const float* a, const float* b)
-	{
-		// Result is 3x3 
-		mulMatrix_1x2_2x3(&dst[0], &a[0], b);
-		mulMatrix_1x2_2x3(&dst[3], &a[2], b);
-		mulMatrix_1x2_2x3(&dst[6], &a[4], b);
-	}
-
-
-    inline void mulMatrix_3x3_3x3(float* dst, const float* a, const float* b)
-    {
-        // Result is 3x3 
-		mulMatrix_1x3_3x3(&dst[0], &a[0], b);
-		mulMatrix_1x3_3x3(&dst[3], &a[3], b);
-		mulMatrix_1x3_3x3(&dst[6], &a[6], b);
-    }
-
-
-    inline void mulMatrix_3x4_4x3(float* dst, const float* a, const float* b)
-    {
-		// Result is 3x3
-		mulMatrix_1x4_4x3(&dst[0], &a[0], b);
-		mulMatrix_1x4_4x3(&dst[3], &a[4], b);
-		mulMatrix_1x4_4x3(&dst[6], &a[8], b);
-    }
-
-
-	// --- 4x3 result ----------------------------------------------------------
-	
-    inline void mulMatrix_4x2_2x3(float* dst, const float* a, const float* b)
-    {
-		// Result is 4x3
-		mulMatrix_2x2_2x3(&dst[0], &a[0], b);
-		mulMatrix_2x2_2x3(&dst[6], &a[4], b);
-    }
-
-
-	inline void mulMatrix_4x3_3x3(float* dst, const float* a, const float* b)
-	{
-		// Result is 4x3 
-		mulMatrix_1x3_3x3(&dst[0], &a[0], b);
-		mulMatrix_1x3_3x3(&dst[3], &a[3], b);
-		mulMatrix_1x3_3x3(&dst[6], &a[6], b);
-		mulMatrix_1x3_3x3(&dst[9], &a[9], b);
-	}
-
-
-    inline void mulMatrix_4x4_4x3(float* dst, const float* a, const float* b)
-    {
-		// Result is 4x3
-        mulMatrix_1x4_4x3(&dst[0], &a[0], b);
-        mulMatrix_1x4_4x3(&dst[3], &a[4], b);
-        mulMatrix_1x4_4x3(&dst[6], &a[8], b);
-        mulMatrix_1x4_4x3(&dst[9], &a[12], b);
-    }
-
-
-	// --- 1x4 result ----------------------------------------------------------
-
-    inline void mulMatrix_1x2_2x4(float* dst, const float* a, const float* b)
+	/// @brief Multiply 1x2 by 2x4 using the small float SIMD kernel.
+	inline void mulMatrix_1x2_2x4(float* dst, const float* a, const float* b)
     {
 		// Result is 1x4
 		__m128 vB, vResult;
@@ -407,8 +141,8 @@ namespace sel::utils {
 		_mm_storeu_ps(dst, vResult);
     }
 
-
-    inline void mulMatrix_1x3_3x4(float* dst, const float* a, const float* b)
+	/// @brief Multiply 1x3 by 3x4 using the small float SIMD kernel.
+	inline void mulMatrix_1x3_3x4(float* dst, const float* a, const float* b)
     {
         // Result is 1x4
         __m128 vB, vResult;
@@ -435,8 +169,8 @@ namespace sel::utils {
         _mm_storeu_ps(dst, vResult);
     }
 
-
-    inline void mulMatrix_1x4_4x4(float* dst, const float* a, const float* b)
+	/// @brief Multiply 1x4 by 4x4 using the small float SIMD kernel.
+	inline void mulMatrix_1x4_4x4(float* dst, const float* a, const float* b)
     {
         // Result is 1x4
 		__m128 vB, vResult;
@@ -469,10 +203,8 @@ namespace sel::utils {
         _mm_storeu_ps(dst, vResult);
     }
 
-
-	// --- 2x4 result ----------------------------------------------------------
-
-    inline void mulMatrix_2x2_2x4(float* dst, const float* a, const float* b)
+	/// @brief Multiply 2x2 by 2x4 using the small float SIMD kernel.
+	inline void mulMatrix_2x2_2x4(float* dst, const float* a, const float* b)
     {
 		// Result is 2x4
         // We calculate row by row.
@@ -480,7 +212,7 @@ namespace sel::utils {
 		mulMatrix_1x2_2x4(&dst[4], &a[2], b);
     }
 
-
+	/// @brief Multiply 2x3 by 3x4 using the small float SIMD kernel.
 	inline void mulMatrix_2x3_3x4(float* dst, const float* a, const float* b)
 	{
 		// Result is 2x4
@@ -489,8 +221,8 @@ namespace sel::utils {
 		mulMatrix_1x3_3x4(&dst[4], &a[3], b);
 	}
 
-
-    inline void mulMatrix_2x4_4x4(float* dst, const float* a, const float* b)
+	/// @brief Multiply 2x4 by 4x4 using the small float SIMD kernel.
+	inline void mulMatrix_2x4_4x4(float* dst, const float* a, const float* b)
     {
         // Result is 2x4
         // We calculate row by row.
@@ -498,10 +230,8 @@ namespace sel::utils {
         mulMatrix_1x4_4x4(&dst[4], &a[4], b);
     }
 
-
-	// --- 3x4 result ----------------------------------------------------------
-
-    inline void mulMatrix_3x2_2x4(float* dst, const float* a, const float* b)
+	/// @brief Multiply 3x2 by 2x4 using the small float SIMD kernel.
+	inline void mulMatrix_3x2_2x4(float* dst, const float* a, const float* b)
     {
 		// Result is 3x4
 		// We calculate row by row.
@@ -510,8 +240,8 @@ namespace sel::utils {
 		mulMatrix_1x2_2x4(&dst[8], &a[4], b);
     }
 
-
-    inline void mulMatrix_3x3_3x4(float* dst, const float* a, const float* b)
+	/// @brief Multiply 3x3 by 3x4 using the small float SIMD kernel.
+	inline void mulMatrix_3x3_3x4(float* dst, const float* a, const float* b)
     {
 		// Result is 3x4
 		// We calculate row by row.
@@ -520,8 +250,8 @@ namespace sel::utils {
 		mulMatrix_1x3_3x4(&dst[8], &a[6], b);
 	}
 
-
-    inline void mulMatrix_3x4_4x4(float* dst, const float* a, const float* b)
+	/// @brief Multiply 3x4 by 4x4 using the small float SIMD kernel.
+	inline void mulMatrix_3x4_4x4(float* dst, const float* a, const float* b)
     {
         // Result is 3x4
         // We calculate row by row.
@@ -530,10 +260,8 @@ namespace sel::utils {
         mulMatrix_1x4_4x4(&dst[8], &a[8], b);
     }
 
-
-	// --- 4x4 result ----------------------------------------------------------
-	
-    inline void mulMatrix_4x2_2x4(float* dst, const float* a, const float* b)
+	/// @brief Multiply 4x2 by 2x4 using the small float SIMD kernel.
+	inline void mulMatrix_4x2_2x4(float* dst, const float* a, const float* b)
     {
 		// Result is 4x4
 		// We calculate 2-rows blocks each at a time.
@@ -541,8 +269,8 @@ namespace sel::utils {
 		mulMatrix_2x2_2x4(&dst[8], &a[4], b);
     }
 
-
-    inline void mulMatrix_4x3_3x4(float* dst, const float* a, const float* b)
+	/// @brief Multiply 4x3 by 3x4 using the small float SIMD kernel.
+	inline void mulMatrix_4x3_3x4(float* dst, const float* a, const float* b)
     {
 		// Result is 4x4
         // We calculate row by row.
@@ -552,8 +280,8 @@ namespace sel::utils {
         mulMatrix_1x3_3x4(&dst[12], &a[9], b);
     }
 
-
-    inline void mulMatrix_4x4_4x4(float* dst, const float* a, const float* b)
+	/// @brief Multiply 4x4 by 4x4 using the small float SIMD kernel.
+	inline void mulMatrix_4x4_4x4(float* dst, const float* a, const float* b)
     {
         // Result is 4x4
         // We calculate row by row.
@@ -562,112 +290,5 @@ namespace sel::utils {
         mulMatrix_1x4_4x4(&dst[8], &a[8], b);
         mulMatrix_1x4_4x4(&dst[12], &a[12], b);
     }
-
-
-	// --- Large square results ------------------------------------------------
-
-	/// @brief Multiply square matrices with independent four-column accumulators.
-	///
-	/// @tparam Size is the number of rows and columns, divisible by four.
-	/// @param dst is the destination matrix, distinct from both inputs.
-	/// @param a is the first matrix.
-	/// @param b is the second matrix.
-	///
-	template <std::size_t Size>
-	inline void mulMatrixSquare(float (&dst)[Size][Size], const float (&a)[Size][Size], const float (&b)[Size][Size])
-	{
-		static_assert(Size % 4 == 0, "SIMD multiplication requires groups of four columns");
-
-		// Keep independent column groups in flight and reuse each broadcast.
-		// Each output still accumulates inner coordinates in their original order.
-		// Eight-column blocks serve 8x8; larger matrices use sixteen columns.
-		constexpr std::size_t ColumnsPerBlock = Size % 16 == 0 ? 16 : (Size % 8 == 0 ? 8 : 4);
-		static_assert(Size % ColumnsPerBlock == 0, "SIMD multiplication requires complete column blocks");
-		for (std::size_t row = 0; row < Size; ++row)
-		{
-			for (std::size_t column = 0; column < Size; column += ColumnsPerBlock)
-			{
-				__m128 left = _mm_set1_ps(a[row][0]);
-				__m128 result0 = _mm_mul_ps(left, _mm_loadu_ps(&b[0][column]));
-				__m128 result1, result2, result3;
-				if constexpr (ColumnsPerBlock >= 8)
-				{
-					result1 = _mm_mul_ps(left, _mm_loadu_ps(&b[0][column + 4]));
-				}
-				if constexpr (ColumnsPerBlock == 16)
-				{
-					result2 = _mm_mul_ps(left, _mm_loadu_ps(&b[0][column + 8]));
-					result3 = _mm_mul_ps(left, _mm_loadu_ps(&b[0][column + 12]));
-				}
-
-				for (std::size_t inner = 1; inner < Size; ++inner)
-				{
-					left = _mm_set1_ps(a[row][inner]);
-					result0 = _mm_add_ps(result0, _mm_mul_ps(left, _mm_loadu_ps(&b[inner][column])));
-					if constexpr (ColumnsPerBlock >= 8)
-					{
-						result1 = _mm_add_ps(result1, _mm_mul_ps(left, _mm_loadu_ps(&b[inner][column + 4])));
-					}
-					if constexpr (ColumnsPerBlock == 16)
-					{
-						result2 = _mm_add_ps(result2, _mm_mul_ps(left, _mm_loadu_ps(&b[inner][column + 8])));
-						result3 = _mm_add_ps(result3, _mm_mul_ps(left, _mm_loadu_ps(&b[inner][column + 12])));
-					}
-				}
-
-				// Matrix objects and array elements need only natural scalar alignment.
-				_mm_storeu_ps(&dst[row][column], result0);
-				if constexpr (ColumnsPerBlock >= 8)
-				{
-					_mm_storeu_ps(&dst[row][column + 4], result1);
-				}
-				if constexpr (ColumnsPerBlock == 16)
-				{
-					_mm_storeu_ps(&dst[row][column + 8], result2);
-					_mm_storeu_ps(&dst[row][column + 12], result3);
-				}
-			}
-		}
-	}
-
-
-	/// @brief Multiply two 8x8 float matrices using SIMD instructions.
-	///
-	/// @param dst is the destination matrix, distinct from both inputs.
-	/// @param a is the first matrix.
-	/// @param b is the second matrix.
-	///
-	inline void mulMatrix_8x8_8x8(float (&dst)[8][8], const float (&a)[8][8], const float (&b)[8][8])
-	{
-		// Reuse broadcasts across independent column groups.
-		mulMatrixSquare(dst, a, b);
-	}
-
-
-	/// @brief Multiply two 16x16 float matrices using SIMD instructions.
-	///
-	/// @param dst is the destination matrix, distinct from both inputs.
-	/// @param a is the first matrix.
-	/// @param b is the second matrix.
-	///
-	inline void mulMatrix_16x16_16x16(float (&dst)[16][16], const float (&a)[16][16], const float (&b)[16][16])
-	{
-		// Reuse broadcasts across independent column groups.
-		mulMatrixSquare(dst, a, b);
-	}
-
-
-	/// @brief Multiply two 32x32 float matrices using SIMD instructions.
-	///
-	/// @param dst is the destination matrix, distinct from both inputs.
-	/// @param a is the first matrix.
-	/// @param b is the second matrix.
-	///
-	inline void mulMatrix_32x32_32x32(float (&dst)[32][32], const float (&a)[32][32], const float (&b)[32][32])
-	{
-		// Reuse broadcasts across independent column groups.
-		mulMatrixSquare(dst, a, b);
-	}
-
 
 }

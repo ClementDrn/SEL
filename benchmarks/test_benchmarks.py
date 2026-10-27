@@ -38,16 +38,36 @@ class DiscoveryTests(unittest.TestCase):
     def test_current_coverage(self):
         expected = compare.expected_cases()
         source, products = generate_benchmarks.generate(
-            Path(__file__).resolve().parents[1] / 'include/SEL/Maths/Matrices')
+            Path(__file__).resolve().parents[1] / 'include/SEL/Maths/Matrices', rectangular=True)
         self.assertEqual(len(expected), products * 6)
         self.assertEqual(source.count('matrixBench::run<'), len(expected))
 
     def test_int4_backend_selection_is_shape_specific(self):
         int4_cases = {shape for shape, value_type in compare.expected_cases()
                       if value_type == 'int4'}
-        self.assertEqual(len(int4_cases), 30)
+        self.assertEqual(len(int4_cases), 60)
         explicit = {shape for shape in int4_cases if compare.uses_intrinsics(shape, 'int4')}
-        self.assertEqual(explicit, {'{}x{}*{}x{}'.format(n, n, n, n) for n in (4, 8, 16, 32)})
+        self.assertIn('3x6*6x10', explicit)
+        self.assertNotIn('5x3*3x7', explicit)
+        self.assertNotIn('8x8*8x9', explicit)
+
+    def test_rectangular_generation_uses_generic_types(self):
+        headers = Path(__file__).resolve().parents[1] / 'include/SEL/Maths/Matrices'
+        source, count = generate_benchmarks.generate(headers, rectangular=True)
+        self.assertEqual(count, 60)
+        self.assertIn('sel::Matrix<float, 8, 13>', source)
+        self.assertIn('sel::Matrix<sel::Int4, 3, 34>', source)
+
+    def test_narrow_and_remainder_dispatch(self):
+        for shape, value_type, expected in [
+                ('3x3*3x3', 'float', False), ('3x3*3x2', 'int', False),
+                ('2x4*4x2', 'float', True), ('2x4*4x2', 'int', False),
+                ('8x8*8x1', 'float', False), ('8x8*8x3', 'int', False),
+                ('8x8*8x5', 'float', True), ('8x8*8x9', 'int8', True),
+                ('3x6*6x10', 'int4', True), ('3x5*5x10', 'int4', False),
+                ('3x6*6x9', 'int4', False), ('8x8*8x8', 'double', False)]:
+            with self.subTest(shape=shape, value_type=value_type):
+                self.assertEqual(compare.uses_intrinsics(shape, value_type), expected)
 
 
 class ProtocolTests(unittest.TestCase):
@@ -72,7 +92,7 @@ class ProtocolTests(unittest.TestCase):
         for shape, explicit in [('4x4*4x4', 1), ('8x8*8x8', 1),
                                 ('16x16*16x16', 1), ('32x32*32x32', 1),
                                 ('2x2*2x2', 0), ('3x3*3x3', 0),
-                                ('4x2*2x4', 0), ('4x3*3x4', 0), ('4x4*4x3', 0)]:
+                                ('4x2*2x4', 1), ('4x3*3x4', 0), ('4x4*4x3', 0)]:
             expected = {(shape, 'int4')}
             for backend in ('scalar', 'simd'):
                 enabled = explicit if backend == 'simd' else 0
@@ -149,7 +169,7 @@ class ComparisonTests(unittest.TestCase):
         self.assertEqual(timings['simd'][key], [10, 10])
 
     def test_int4_summary_distinguishes_square_and_rectangular_paths(self):
-        keys = [('4x4*4x4', 'int4'), ('4x2*2x4', 'int4')]
+        keys = [('4x4*4x4', 'int4'), ('4x3*3x4', 'int4')]
         timings = {backend: {key: [10, 11, 12] for key in keys} for backend in compare.BACKENDS}
         paths = {(row['shape'], row['type']): row['on_path']
                  for row in compare.summarize(timings, 3, 20)}

@@ -54,4 +54,7 @@ namespace sel {
 		unsigned char m_bits = 0;
 	};
 
+	/// @brief Fixed-width spelling for the signed four-bit value.
+	using int4_t = Int4;
+
 }

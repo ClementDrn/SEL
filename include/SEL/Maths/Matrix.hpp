@@ -1,3 +1,5 @@
+#pragma once
+
 // Include all matrix headers
 
 #include "SEL/Maths/Matrices/Mat2x2.hpp"

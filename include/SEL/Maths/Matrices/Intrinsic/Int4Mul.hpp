@@ -4,6 +4,7 @@
 #include <immintrin.h>
 #include <cstddef>
 #include <cstring>
+#include <type_traits>
 
 #include "SEL/Maths/Matrices/PackedInt4Matrix.hpp"
 
@@ -66,6 +67,50 @@ namespace sel::utils {
 				const __m128i packed = _mm_packus_epi16(pairs, _mm_setzero_si128());
 				std::memcpy(output + row * (Size / 2) + group * 4, &packed, packedGroupBytes);
 			}
+		}
+	}
+
+	/// @brief Multiply packed rectangular matrices with byte-aligned rows.
+	/// Even Inner and Columns keep row starts on byte boundaries. At most eight
+	/// outputs are unpacked at once, so scratch space does not grow with shape.
+	/// Word sums may wrap: masking their low nibble preserves modulo-16 results.
+	template <std::size_t Rows, std::size_t Inner, std::size_t Columns,
+		class Product, class Left, class Right>
+	inline void mulMatrixInt4Rectangular(Product& dst, const Left& a, const Right& b)
+	{
+		static_assert(Inner % 2 == 0 && Columns % 2 == 0 && Columns >= 4,
+			"Packed SIMD requires even row widths and at least four output columns");
+		const auto* left = PackedInt4Access::data(a);
+		const auto* right = PackedInt4Access::data(b);
+		auto* output = PackedInt4Access::data(dst);
+		const __m128i nibbleMask = _mm_set1_epi8(15);
+		for (std::size_t row = 0; row < Rows; ++row)
+		{
+			// Compile-time byte counts keep partial packed loads/stores inline.
+			const auto multiplyColumns = [&](auto width, std::size_t column)
+			{
+				constexpr std::size_t count = decltype(width)::value;
+				__m128i sum = _mm_setzero_si128();
+				for (std::size_t inner = 0; inner < Inner; ++inner)
+				{
+					__m128i packed = _mm_setzero_si128();
+					std::memcpy(&packed, right + inner * (Columns / 2) + column / 2, count / 2);
+					const __m128i low = _mm_and_si128(packed, nibbleMask);
+					const __m128i high = _mm_and_si128(_mm_srli_epi16(packed, 4), nibbleMask);
+					const __m128i values = _mm_cvtepu8_epi16(_mm_unpacklo_epi8(low, high));
+					const unsigned int byte = left[row * (Inner / 2) + inner / 2];
+					const __m128i value = _mm_set1_epi16((byte >> ((inner % 2) * 4)) & 15u);
+					sum = _mm_add_epi16(sum, _mm_mullo_epi16(value, values));
+				}
+				const __m128i bytes = _mm_packus_epi16(_mm_and_si128(sum, _mm_set1_epi16(15)), _mm_setzero_si128());
+				const __m128i pairs = _mm_maddubs_epi16(bytes, _mm_set1_epi16(0x1001));
+				const __m128i packed = _mm_packus_epi16(pairs, _mm_setzero_si128());
+				std::memcpy(output + row * (Columns / 2) + column / 2, &packed, count / 2);
+			};
+			for (std::size_t column = 0; column + 8 <= Columns; column += 8)
+				multiplyColumns(std::integral_constant<std::size_t, 8>{}, column);
+			if constexpr (Columns % 8 != 0)
+				multiplyColumns(std::integral_constant<std::size_t, Columns % 8>{}, Columns - Columns % 8);
 		}
 	}
 

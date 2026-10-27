@@ -91,33 +91,38 @@ namespace matrixTests
             }
         }
 
-        // Assignment must copy values, even between two nibbles sharing a byte.
-        assigned[0][0] = 7;
-        assigned[0][1] = -8;
-        assigned[0][0] = assigned[0][1];
-        CHECK(int(assigned[0][0]) == -8);
-        CHECK(int(assigned[0][1]) == -8);
-        assigned[0][0] = 3;
-        CHECK(int(assigned[0][1]) == -8);
-        assigned[0][1] = assigned[0][0];
-        CHECK(int(assigned[0][1]) == 3);
-        assigned[0][0] = assigned[0][0];
-        CHECK(int(assigned[0][0]) == 3);
-        assigned[0][0] = original[Rows - 1][Columns - 1];
-        CHECK(assigned[0][0] == original[Rows - 1][Columns - 1]);
+        // A neighboring nibble may belong to the following row.
+        if constexpr (count > 1)
+        {
+            // Assignment must copy values, even between two nibbles sharing a byte.
+            assigned[0][0] = 7;
+            assigned[1 / Columns][1 % Columns] = -8;
+            assigned[0][0] = assigned[1 / Columns][1 % Columns];
+            CHECK(int(assigned[0][0]) == -8);
+            CHECK(int(assigned[1 / Columns][1 % Columns]) == -8);
+            assigned[0][0] = 3;
+            CHECK(int(assigned[1 / Columns][1 % Columns]) == -8);
+            assigned[1 / Columns][1 % Columns] = assigned[0][0];
+            CHECK(int(assigned[1 / Columns][1 % Columns]) == 3);
+            assigned[0][0] = assigned[0][0];
+            CHECK(int(assigned[0][0]) == 3);
+            assigned[0][0] = original[Rows - 1][Columns - 1];
+            CHECK(assigned[0][0] == original[Rows - 1][Columns - 1]);
 
-        zero[0][0] = 7;
-        zero[0][0] += 1;
-        CHECK(int(zero[0][0]) == -8);
-        zero[0][0] -= 1;
-        CHECK(int(zero[0][0]) == 7);
-        zero[0][0] *= 7;
-        CHECK(int(zero[0][0]) == 1);
-        zero[0][1] = 2;
-        CHECK(int(zero[0][0] + zero[0][1]) == 3);
-        CHECK(int(zero[0][0] - zero[0][1]) == -1);
-        CHECK(int(zero[0][0] * zero[0][1]) == 2);
-        CHECK(zero[0][0] < zero[0][1]);
+            zero[0][0] = 7;
+            zero[0][0] += 1;
+            CHECK(int(zero[0][0]) == -8);
+            zero[0][0] -= 1;
+            CHECK(int(zero[0][0]) == 7);
+            zero[0][0] *= 7;
+            CHECK(int(zero[0][0]) == 1);
+            zero[1 / Columns][1 % Columns] = 2;
+            CHECK(int(zero[0][0] + zero[1 / Columns][1 % Columns]) == 3);
+            CHECK(int(zero[0][0] - zero[1 / Columns][1 % Columns]) == -1);
+            CHECK(int(zero[0][0] * zero[1 / Columns][1 % Columns]) == 2);
+            CHECK(zero[0][0] < zero[1 / Columns][1 % Columns]);
+
+        }
 
         assigned = original;
         assigned += assigned;

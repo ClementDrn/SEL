@@ -13,6 +13,16 @@
 #include <catch2/catch_test_macros.hpp>
 #include <SEL/Maths/Matrix.hpp>
 
+// Keep shared validation out of thousands of fixture call sites. This bounds
+// Release compilation cost while retaining optimized multiplication inside it.
+#if defined(_MSC_VER)
+#define SEL_TEST_NOINLINE __declspec(noinline)
+#elif defined(__GNUC__) || defined(__clang__)
+#define SEL_TEST_NOINLINE __attribute__((noinline))
+#else
+#define SEL_TEST_NOINLINE
+#endif
+
 namespace matrixTests
 {
     // int4 intentionally accepts integers only. Fixtures store exact integers
@@ -93,7 +103,7 @@ namespace matrixTests
     // Inputs and expected values come from Python, independently of SEL arithmetic.
     template <class T, class Left, class Right, class Product,
               std::size_t Rows, std::size_t Inner, std::size_t Columns>
-    void checkProductAt(const char* fixture,
+    SEL_TEST_NOINLINE void checkProductAt(const char* fixture,
                         Left& left, Right& right, Product& result,
                         const std::array<long double, Rows * Inner>& leftValues,
                         const std::array<long double, Inner * Columns>& rightValues,
@@ -197,7 +207,7 @@ namespace matrixTests
 
     template <class T, class Left, class Right, class Product,
               std::size_t Rows, std::size_t Inner, std::size_t Columns>
-    void checkProduct(const char* fixture,
+    SEL_TEST_NOINLINE void checkProduct(const char* fixture,
                       const std::array<long double, Rows * Inner>& leftValues,
                       const std::array<long double, Inner * Columns>& rightValues,
                       const std::array<long double, Rows * Columns>& expected)
@@ -229,3 +239,5 @@ namespace matrixTests
         CHECK(offsetResult.suffix == T(37));
     }
 }
+
+#undef SEL_TEST_NOINLINE
