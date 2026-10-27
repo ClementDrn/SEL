@@ -33,6 +33,35 @@ You can now use the library by including `SEL/sel.hpp` or a more specific file l
 ```
 
 
+## Example: Int4 Matrix Multiplication
+
+Use the `i4` aliases (or `Mat4x4<sel::int4>`) for packed signed four-bit matrices.
+Two values share each byte, and arithmetic wraps within `[-8, 7]`.
+
+```cpp
+#define SEL_INTRINSIC_MATRIX_MUL    // Optional: for SIMD optimizations on matrix multiplications
+#include <SEL/Maths/Matrix.hpp>
+#include <iostream>
+
+int main()
+{
+    sel::Mat4x4i4 a = {     // Initialize matrix with values
+        1, 3, 5, 7,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0
+    };
+    a[0][3] += 1;       // 7 + 1 wraps to -8 (due to Int4's format)
+
+    sel::Mat4x4i4 b(2);     // Initialize diagonal matrix with 2s
+    sel::Mat4x4i4 c;        // Zero-initialized matrix
+    c = a * b;     // Multiply matrices
+
+    std::cout << c[0][1] << std::endl;      // Prints 6
+}
+```
+
+
 ## Tests
 
 Requires a C++17 compiler, CMake 3.21+, Python 3.6+, Git, and a build tool;
