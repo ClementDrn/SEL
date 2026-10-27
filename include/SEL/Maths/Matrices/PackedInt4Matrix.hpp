@@ -65,7 +65,7 @@ namespace sel::utils {
 			&& (std::is_convertible_v<Values, Int4> && ...), int> = 0>
 		constexpr PackedInt4Matrix(Values... values)
 		{
-			const Int4 elements[] = { int4(values)... };
+			const Int4 elements[] = { Int4(values)... };
 			for (std::size_t index = 0; index < Rows * Columns; ++index)
 			{
 				element(index) = elements[index];
