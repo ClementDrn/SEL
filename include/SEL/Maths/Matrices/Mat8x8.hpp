@@ -2,6 +2,8 @@
 
 #include <cstdint>
 
+#include "PackedInt4Matrix.hpp"
+
 #include <cstddef>
 
 
@@ -346,6 +348,18 @@ namespace sel {
 
 		T m_data[8][8] = {};
 	};
+
+	template <>
+	class Mat8x8<int4> : public utils::PackedInt4Matrix<8, 8, Mat8x8<int4>>
+	{
+		using Base = utils::PackedInt4Matrix<8, 8, Mat8x8<int4>>;
+	public:
+		using Base::Base;
+		constexpr Mat8x8() = default;
+	};
+
+	/// @brief Representation of a packed 8x8 signed four-bit matrix.
+	using Mat8x8i4 = Mat8x8<int4>;
 
 	/// @brief Representation of a 8x8 integer matrix.
 	///

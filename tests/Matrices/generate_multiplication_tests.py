@@ -108,6 +108,26 @@ def wrap_int8(value):
     return Fraction((value.numerator + 128) % 256 - 128)
 
 
+def wrap_int4(value):
+    """Mathematical modulo-16 interpretation in the range [-8, 7]."""
+    assert value.denominator == 1
+    return Fraction((value.numerator + 8) % 16 - 8)
+
+
+def int4_fixtures(rows, inner, columns):
+    for label, left, right in fixtures(rows, inner, columns, False):
+        if label != 'fractional':
+            yield label, list(map(wrap_int4, left)), list(map(wrap_int4, right))
+
+    for label, a, b in [('minimum squared', -8, -8),
+                        ('maximum squared', 7, 7),
+                        ('mixed limits', -8, 7)]:
+        yield label, [Fraction(a)] * (rows * inner), [Fraction(b)] * (inner * columns)
+    yield 'alternating limits', [Fraction(-8 if i % 2 else 7)
+                                for i in range(rows * inner)], [
+        Fraction(7 if i % 3 else -8) for i in range(inner * columns)]
+
+
 def int8_fixtures(rows, inner, columns):
     # Narrow inputs before computing expectations, rather than narrowing a result
     # calculated from inputs that cannot be represented by the tested matrix.
@@ -129,6 +149,7 @@ def int8_fixtures(rows, inner, columns):
 def generate(shapes):
     lines = ['// Generated file. Edit generate_multiplication_tests.py instead.',
              '#include "MultiplicationChecks.hpp"',
+             '#include "Int4Checks.hpp"',
              '#include <catch2/catch_template_test_macros.hpp>', '']
     combinations = 0
     for rows, inner in sorted(shapes):
@@ -138,17 +159,21 @@ def generate(shapes):
             combinations += 1
             name = f"{rows}x{inner} * {inner}x{columns} -> {rows}x{columns}"
             lines += [f'TEMPLATE_TEST_CASE("{name}", "[matrix][multiplication]",',
-                      '                   std::int8_t, int, unsigned int, float, double)', '{']
-            for group in ('int8', 'unsigned', 'signed'):
-                condition = {'int8': 'if constexpr (std::is_same_v<TestType, std::int8_t>)',
+                      '                   sel::int4, std::int8_t, int, unsigned int, float, double)', '{']
+            for group in ('int4', 'int8', 'unsigned', 'signed'):
+                condition = {'int4': 'if constexpr (std::is_same_v<TestType, sel::int4>)',
+                             'int8': 'else if constexpr (std::is_same_v<TestType, std::int8_t>)',
                              'unsigned': 'else if constexpr (std::is_unsigned_v<TestType>)',
                              'signed': 'else'}[group]
                 lines += [f'    {condition}', '    {']
-                cases = (int8_fixtures(rows, inner, columns) if group == 'int8'
+                cases = (int4_fixtures(rows, inner, columns) if group == 'int4'
+                         else int8_fixtures(rows, inner, columns) if group == 'int8'
                          else fixtures(rows, inner, columns, group == 'unsigned'))
                 for label, left, right in cases:
                     expected = verified_product(left, right, rows, inner, columns)
-                    if group == 'int8':
+                    if group == 'int4':
+                        expected = list(map(wrap_int4, expected))
+                    elif group == 'int8':
                         expected = list(map(wrap_int8, expected))
                     # Fractional cases apply only to floating-point instantiations.
                     indent = '        '
@@ -170,6 +195,9 @@ def generate(shapes):
     if combinations == 0:
         raise ValueError("No compatible matrix shapes found")
     for rows, columns in sorted(shapes):
+        lines += [f'TEST_CASE("{rows}x{columns} packed int4 operations", "[matrix][int4][operations]")', '{',
+                  f'    matrixTests::checkInt4Operations<sel::Mat{rows}x{columns}i4, {rows}, {columns}>();',
+                  '}', '']
         if rows == columns and rows > 4:
             lines += [f'TEMPLATE_TEST_CASE("{rows}x{rows} matrix operations", "[matrix][operations]",',
                       '                   std::int8_t, int, unsigned int, float, double)', '{',
@@ -194,6 +222,9 @@ def main():
     # Hand-calculated anchors also guard the reference arithmetic itself.
     assert verified_product([1, 2, 3, 4], [5, 6, 7, 8], 2, 2, 2) == [19, 22, 43, 50]
     assert verified_product([1, -2, 3, 4, 5, -6], [7, 8, 9, 10, 11, 12], 2, 3, 2) == [22, 24, 7, 10]
+    assert wrap_int4(Fraction(8)) == -8
+    assert wrap_int4(Fraction(-9)) == 7
+    assert list(map(wrap_int4, verified_product([7, -8, 1, 2], [1, 2, 3, 4], 2, 2, 2))) == [-1, -2, 7, -6]
     source, combinations = generate(shapes)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(source, encoding='utf-8')

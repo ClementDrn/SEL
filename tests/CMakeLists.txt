@@ -34,7 +34,7 @@ list(APPEND CMAKE_MODULE_PATH "${catch2_SOURCE_DIR}/extras")
 include(Catch)
 
 foreach(backend IN ITEMS scalar simd)
-    add_executable(sel_tests_${backend} "${matrix_tests}")
+    add_executable(sel_tests_${backend} "${matrix_tests}" Matrices/Int4Tests.cpp)
     add_dependencies(sel_tests_${backend} sel_matrix_fixtures)
     target_include_directories(sel_tests_${backend} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/Matrices")
     target_link_libraries(sel_tests_${backend} PRIVATE SEL::SEL Catch2::Catch2WithMain)

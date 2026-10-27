@@ -2,6 +2,8 @@
 
 #include <cstdint>
 
+#include "PackedInt4Matrix.hpp"
+
 
 namespace sel {
 
@@ -126,6 +128,18 @@ namespace sel {
 
 		T m_data[3][2] = {};
 	};
+
+	template <>
+	class Mat3x2<int4> : public utils::PackedInt4Matrix<3, 2, Mat3x2<int4>>
+	{
+		using Base = utils::PackedInt4Matrix<3, 2, Mat3x2<int4>>;
+	public:
+		using Base::Base;
+		constexpr Mat3x2() = default;
+	};
+
+	/// @brief Representation of a packed 3x2 signed four-bit matrix.
+	using Mat3x2i4 = Mat3x2<int4>;
 
 	/// @brief Representation of a 3x2 integer matrix.
 	///

@@ -2,6 +2,8 @@
 
 #include <cstdint>
 
+#include "PackedInt4Matrix.hpp"
+
 #include <cstddef>
 
 
@@ -3370,6 +3372,18 @@ namespace sel {
 
 		T m_data[32][32] = {};
 	};
+
+	template <>
+	class Mat32x32<int4> : public utils::PackedInt4Matrix<32, 32, Mat32x32<int4>>
+	{
+		using Base = utils::PackedInt4Matrix<32, 32, Mat32x32<int4>>;
+	public:
+		using Base::Base;
+		constexpr Mat32x32() = default;
+	};
+
+	/// @brief Representation of a packed 32x32 signed four-bit matrix.
+	using Mat32x32i4 = Mat32x32<int4>;
 
 	/// @brief Representation of a 32x32 integer matrix.
 	///

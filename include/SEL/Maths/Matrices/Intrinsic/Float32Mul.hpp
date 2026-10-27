@@ -566,7 +566,7 @@ namespace sel::utils {
 
 	// --- Large square results ------------------------------------------------
 
-	/// @brief Multiply square matrices in groups of four columns.
+	/// @brief Multiply square matrices with independent four-column accumulators.
 	///
 	/// @tparam Size is the number of rows and columns, divisible by four.
 	/// @param dst is the destination matrix, distinct from both inputs.
@@ -578,21 +578,54 @@ namespace sel::utils {
 	{
 		static_assert(Size % 4 == 0, "SIMD multiplication requires groups of four columns");
 
-		// Broadcast one value of a and multiply four adjacent values of b.
-		// Unaligned loads and stores also support matrices without SIMD alignment.
+		// Keep independent column groups in flight and reuse each broadcast.
+		// Each output still accumulates inner coordinates in their original order.
+		// Eight-column blocks serve 8x8; larger matrices use sixteen columns.
+		constexpr std::size_t ColumnsPerBlock = Size % 16 == 0 ? 16 : (Size % 8 == 0 ? 8 : 4);
+		static_assert(Size % ColumnsPerBlock == 0, "SIMD multiplication requires complete column blocks");
 		for (std::size_t row = 0; row < Size; ++row)
 		{
-			for (std::size_t column = 0; column < Size; column += 4)
+			for (std::size_t column = 0; column < Size; column += ColumnsPerBlock)
 			{
-				__m128 vResult = _mm_mul_ps(_mm_set1_ps(a[row][0]), _mm_loadu_ps(&b[0][column]));
-				for (std::size_t inner = 1; inner < Size; ++inner)
+				__m128 left = _mm_set1_ps(a[row][0]);
+				__m128 result0 = _mm_mul_ps(left, _mm_loadu_ps(&b[0][column]));
+				__m128 result1, result2, result3;
+				if constexpr (ColumnsPerBlock >= 8)
 				{
-					vResult = _mm_add_ps(vResult, _mm_mul_ps(
-						_mm_set1_ps(a[row][inner]), _mm_loadu_ps(&b[inner][column])
-					));
+					result1 = _mm_mul_ps(left, _mm_loadu_ps(&b[0][column + 4]));
+				}
+				if constexpr (ColumnsPerBlock == 16)
+				{
+					result2 = _mm_mul_ps(left, _mm_loadu_ps(&b[0][column + 8]));
+					result3 = _mm_mul_ps(left, _mm_loadu_ps(&b[0][column + 12]));
 				}
 
-				_mm_storeu_ps(&dst[row][column], vResult);
+				for (std::size_t inner = 1; inner < Size; ++inner)
+				{
+					left = _mm_set1_ps(a[row][inner]);
+					result0 = _mm_add_ps(result0, _mm_mul_ps(left, _mm_loadu_ps(&b[inner][column])));
+					if constexpr (ColumnsPerBlock >= 8)
+					{
+						result1 = _mm_add_ps(result1, _mm_mul_ps(left, _mm_loadu_ps(&b[inner][column + 4])));
+					}
+					if constexpr (ColumnsPerBlock == 16)
+					{
+						result2 = _mm_add_ps(result2, _mm_mul_ps(left, _mm_loadu_ps(&b[inner][column + 8])));
+						result3 = _mm_add_ps(result3, _mm_mul_ps(left, _mm_loadu_ps(&b[inner][column + 12])));
+					}
+				}
+
+				// Matrix objects and array elements need only natural scalar alignment.
+				_mm_storeu_ps(&dst[row][column], result0);
+				if constexpr (ColumnsPerBlock >= 8)
+				{
+					_mm_storeu_ps(&dst[row][column + 4], result1);
+				}
+				if constexpr (ColumnsPerBlock == 16)
+				{
+					_mm_storeu_ps(&dst[row][column + 8], result2);
+					_mm_storeu_ps(&dst[row][column + 12], result3);
+				}
 			}
 		}
 	}
@@ -606,7 +639,7 @@ namespace sel::utils {
 	///
 	inline void mulMatrix_8x8_8x8(float (&dst)[8][8], const float (&a)[8][8], const float (&b)[8][8])
 	{
-		// Calculate each row in groups of four columns.
+		// Reuse broadcasts across independent column groups.
 		mulMatrixSquare(dst, a, b);
 	}
 
@@ -619,7 +652,7 @@ namespace sel::utils {
 	///
 	inline void mulMatrix_16x16_16x16(float (&dst)[16][16], const float (&a)[16][16], const float (&b)[16][16])
 	{
-		// Calculate each row in groups of four columns.
+		// Reuse broadcasts across independent column groups.
 		mulMatrixSquare(dst, a, b);
 	}
 
@@ -632,7 +665,7 @@ namespace sel::utils {
 	///
 	inline void mulMatrix_32x32_32x32(float (&dst)[32][32], const float (&a)[32][32], const float (&b)[32][32])
 	{
-		// Calculate each row in groups of four columns.
+		// Reuse broadcasts across independent column groups.
 		mulMatrixSquare(dst, a, b);
 	}
 

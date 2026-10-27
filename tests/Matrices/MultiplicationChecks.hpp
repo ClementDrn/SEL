@@ -5,6 +5,7 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <limits>
 #include <type_traits>
 #include <utility>
@@ -14,6 +15,21 @@
 
 namespace matrixTests
 {
+    // int4 intentionally accepts integers only. Fixtures store exact integers
+    // in long double, so convert those through int before constructing int4.
+    template <class T>
+    T fixtureValue(long double value)
+    {
+        if constexpr (std::is_same_v<T, sel::int4>)
+        {
+            return T(static_cast<int>(value));
+        }
+        else
+        {
+            return static_cast<T>(value);
+        }
+    }
+
     // Expand row-major values into the same value constructor as small matrices.
     template <class T, class Matrix, std::size_t... Indices>
     Matrix constructSquare(const std::array<T, sizeof...(Indices)>& values,
@@ -77,21 +93,19 @@ namespace matrixTests
     // Inputs and expected values come from Python, independently of SEL arithmetic.
     template <class T, class Left, class Right, class Product,
               std::size_t Rows, std::size_t Inner, std::size_t Columns>
-    void checkProduct(const char* fixture,
-                      const std::array<long double, Rows * Inner>& leftValues,
-                      const std::array<long double, Inner * Columns>& rightValues,
-                      const std::array<long double, Rows * Columns>& expected)
+    void checkProductAt(const char* fixture,
+                        Left& left, Right& right, Product& result,
+                        const std::array<long double, Rows * Inner>& leftValues,
+                        const std::array<long double, Inner * Columns>& rightValues,
+                        const std::array<long double, Rows * Columns>& expected)
     {
         INFO("Fixture: " << fixture);
-        Left left;
-        Right right;
-
         // Fill every element explicitly; zero fixtures do not depend on constructors.
         for (std::size_t row = 0; row < Rows; ++row)
         {
             for (std::size_t column = 0; column < Inner; ++column)
             {
-                left[row][column] = static_cast<T>(leftValues[row * Inner + column]);
+                left[row][column] = fixtureValue<T>(leftValues[row * Inner + column]);
             }
         }
 
@@ -99,12 +113,19 @@ namespace matrixTests
         {
             for (std::size_t column = 0; column < Columns; ++column)
             {
-                right[row][column] = static_cast<T>(rightValues[row * Columns + column]);
+                right[row][column] = fixtureValue<T>(rightValues[row * Columns + column]);
             }
         }
 
-        const auto result = left * right;
-        static_assert(std::is_same_v<std::remove_cv_t<decltype(result)>, Product>);
+        static_assert(std::is_same_v<decltype(left * right), Product>);
+        result = left * right;
+
+        if constexpr (std::is_same_v<T, sel::int4> && (Rows * Columns) % 2 != 0)
+        {
+            std::array<unsigned char, sizeof(Product)> bytes{};
+            std::memcpy(bytes.data(), &result, sizeof(Product));
+            CHECK((bytes.back() & 0xf0u) == 0);
+        }
 
         for (std::size_t row = 0; row < Rows; ++row)
         {
@@ -130,7 +151,16 @@ namespace matrixTests
                 }
                 else
                 {
-                    CHECK(result[row][column] == static_cast<T>(value));
+                    if constexpr (std::is_same_v<T, sel::int4>)
+                    {
+                        // Compare decoded values, so an incorrect expectation
+                        // cannot be hidden by the constructor's own wrapping.
+                        CHECK(int(result[row][column]) == static_cast<int>(value));
+                    }
+                    else
+                    {
+                        CHECK(result[row][column] == static_cast<T>(value));
+                    }
                 }
             }
         }
@@ -141,7 +171,7 @@ namespace matrixTests
             for (std::size_t column = 0; column < Inner; ++column)
             {
                 CAPTURE(row, column);
-                CHECK(left[row][column] == static_cast<T>(leftValues[row * Inner + column]));
+                CHECK(left[row][column] == fixtureValue<T>(leftValues[row * Inner + column]));
             }
         }
 
@@ -150,8 +180,52 @@ namespace matrixTests
             for (std::size_t column = 0; column < Columns; ++column)
             {
                 CAPTURE(row, column);
-                CHECK(right[row][column] == static_cast<T>(rightValues[row * Columns + column]));
+                CHECK(right[row][column] == fixtureValue<T>(rightValues[row * Columns + column]));
             }
         }
+    }
+
+    // Force legal scalar-aligned matrix objects away from SIMD boundaries.
+    // Guards also detect accidental full-vector writes past short output matrices.
+    template <class T, class Matrix>
+    struct alignas(16) OffsetProductMatrix
+    {
+        T prefix = T(42);
+        Matrix value;
+        T suffix = T(37);
+    };
+
+    template <class T, class Left, class Right, class Product,
+              std::size_t Rows, std::size_t Inner, std::size_t Columns>
+    void checkProduct(const char* fixture,
+                      const std::array<long double, Rows * Inner>& leftValues,
+                      const std::array<long double, Inner * Columns>& rightValues,
+                      const std::array<long double, Rows * Columns>& expected)
+    {
+        Left left;
+        Right right;
+        Product result;
+        checkProductAt<T, Left, Right, Product, Rows, Inner, Columns>(
+            fixture, left, right, result, leftValues, rightValues, expected);
+
+        using OffsetLeft = OffsetProductMatrix<T, Left>;
+        using OffsetRight = OffsetProductMatrix<T, Right>;
+        using OffsetResult = OffsetProductMatrix<T, Product>;
+        static_assert(offsetof(OffsetLeft, value) % 16 != 0);
+        static_assert(offsetof(OffsetRight, value) % 16 != 0);
+        static_assert(offsetof(OffsetResult, value) % 16 != 0);
+        OffsetLeft offsetLeft;
+        OffsetRight offsetRight;
+        OffsetResult offsetResult;
+        INFO("Operands and result offset from 16-byte boundaries");
+        checkProductAt<T, Left, Right, Product, Rows, Inner, Columns>(
+            fixture, offsetLeft.value, offsetRight.value, offsetResult.value,
+            leftValues, rightValues, expected);
+        CHECK(offsetLeft.prefix == T(42));
+        CHECK(offsetLeft.suffix == T(37));
+        CHECK(offsetRight.prefix == T(42));
+        CHECK(offsetRight.suffix == T(37));
+        CHECK(offsetResult.prefix == T(42));
+        CHECK(offsetResult.suffix == T(37));
     }
 }
