@@ -6,16 +6,16 @@ namespace sel {
 
 	/// @brief Signed four-bit value with modulo-16 wrapping arithmetic.
 	/// Standalone values occupy one byte; int4 matrices pack two values per byte.
-	class int4
+	class Int4
 	{
 	public:
 		class reference;
 
-		constexpr int4() = default;
+		constexpr Int4() = default;
 
 		/// @brief Retain the low four bits of an integer, without saturation.
 		template <class Integer, std::enable_if_t<std::is_integral_v<Integer>, int> = 0>
-		constexpr int4(Integer value)
+		constexpr Int4(Integer value)
 			: m_bits(static_cast<unsigned char>(value) & 0x0fu) {}
 
 		constexpr int value() const
@@ -25,23 +25,23 @@ namespace sel {
 
 		constexpr explicit operator int() const { return value(); }
 
-		constexpr int4& operator+=(int4 rhs) { return *this = int4(value() + rhs.value()); }
-		constexpr int4& operator-=(int4 rhs) { return *this = int4(value() - rhs.value()); }
-		constexpr int4& operator*=(int4 rhs) { return *this = int4(value() * rhs.value()); }
+		constexpr Int4& operator+=(Int4 rhs) { return *this = Int4(value() + rhs.value()); }
+		constexpr Int4& operator-=(Int4 rhs) { return *this = Int4(value() - rhs.value()); }
+		constexpr Int4& operator*=(Int4 rhs) { return *this = Int4(value() * rhs.value()); }
 
-		constexpr int4 operator+() const { return *this; }
-		constexpr int4 operator-() const { return int4(-value()); }
+		constexpr Int4 operator+() const { return *this; }
+		constexpr Int4 operator-() const { return Int4(-value()); }
 
-		friend constexpr int4 operator+(int4 lhs, int4 rhs) { return lhs += rhs; }
-		friend constexpr int4 operator-(int4 lhs, int4 rhs) { return lhs -= rhs; }
-		friend constexpr int4 operator*(int4 lhs, int4 rhs) { return lhs *= rhs; }
+		friend constexpr Int4 operator+(Int4 lhs, Int4 rhs) { return lhs += rhs; }
+		friend constexpr Int4 operator-(Int4 lhs, Int4 rhs) { return lhs -= rhs; }
+		friend constexpr Int4 operator*(Int4 lhs, Int4 rhs) { return lhs *= rhs; }
 
-		friend constexpr bool operator==(int4 lhs, int4 rhs) { return lhs.value() == rhs.value(); }
-		friend constexpr bool operator!=(int4 lhs, int4 rhs) { return !(lhs == rhs); }
-		friend constexpr bool operator<(int4 lhs, int4 rhs) { return lhs.value() < rhs.value(); }
-		friend constexpr bool operator>(int4 lhs, int4 rhs) { return rhs < lhs; }
-		friend constexpr bool operator<=(int4 lhs, int4 rhs) { return !(rhs < lhs); }
-		friend constexpr bool operator>=(int4 lhs, int4 rhs) { return !(lhs < rhs); }
+		friend constexpr bool operator==(Int4 lhs, Int4 rhs) { return lhs.value() == rhs.value(); }
+		friend constexpr bool operator!=(Int4 lhs, Int4 rhs) { return !(lhs == rhs); }
+		friend constexpr bool operator<(Int4 lhs, Int4 rhs) { return lhs.value() < rhs.value(); }
+		friend constexpr bool operator>(Int4 lhs, Int4 rhs) { return rhs < lhs; }
+		friend constexpr bool operator<=(Int4 lhs, Int4 rhs) { return !(rhs < lhs); }
+		friend constexpr bool operator>=(Int4 lhs, Int4 rhs) { return !(lhs < rhs); }
 
 	private:
 		unsigned char m_bits = 0;

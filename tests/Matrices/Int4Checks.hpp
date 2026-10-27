@@ -30,7 +30,7 @@ namespace matrixTests
         static_assert(sizeof(Matrix) == (count + 1) / 2);
         static_assert(alignof(Matrix) == 1);
         static_assert(std::is_trivially_copyable_v<Matrix>);
-        static_assert(std::is_same_v<decltype(std::declval<const Matrix&>()[0][0]), sel::int4>);
+        static_assert(std::is_same_v<decltype(std::declval<const Matrix&>()[0][0]), sel::Int4>);
         static_assert(std::is_same_v<decltype(std::declval<Matrix&>() += std::declval<const Matrix&>()), Matrix&>);
         static_assert(std::is_same_v<decltype(std::declval<Matrix&>() -= std::declval<const Matrix&>()), Matrix&>);
         static_assert(std::is_same_v<decltype(std::declval<Matrix>() + std::declval<Matrix>()), Matrix>);

@@ -8,19 +8,19 @@
 namespace sel {
 
 	/// @brief Reference to one nibble. Copies of the proxy refer to the same element.
-	class int4::reference
+	class Int4::reference
 	{
 	public:
 		constexpr reference(unsigned char& byte, unsigned int shift)
 			: m_byte(&byte), m_shift(shift) {}
 		constexpr reference(const reference&) = default;
 
-		constexpr operator int4() const { return int4((*m_byte >> m_shift) & 0x0fu); }
-		constexpr explicit operator int() const { return int(int4(*this)); }
-		constexpr int4 operator+() const { return int4(*this); }
-		constexpr int4 operator-() const { return -int4(*this); }
+		constexpr operator Int4() const { return Int4((*m_byte >> m_shift) & 0x0fu); }
+		constexpr explicit operator int() const { return int(Int4(*this)); }
+		constexpr Int4 operator+() const { return Int4(*this); }
+		constexpr Int4 operator-() const { return -Int4(*this); }
 
-		constexpr reference& operator=(int4 value)
+		constexpr reference& operator=(Int4 value)
 		{
 			// Mask only this nibble so the adjacent element remains intact.
 			const unsigned int bits = static_cast<unsigned int>(int(value)) & 0x0fu;
@@ -29,10 +29,10 @@ namespace sel {
 		}
 
 		// Assignment copies the value, rather than rebinding the proxy's pointer.
-		constexpr reference& operator=(const reference& other) { return *this = int4(other); }
-		constexpr reference& operator+=(int4 rhs) { return *this = int4(*this) + rhs; }
-		constexpr reference& operator-=(int4 rhs) { return *this = int4(*this) - rhs; }
-		constexpr reference& operator*=(int4 rhs) { return *this = int4(*this) * rhs; }
+		constexpr reference& operator=(const reference& other) { return *this = Int4(other); }
+		constexpr reference& operator+=(Int4 rhs) { return *this = Int4(*this) + rhs; }
+		constexpr reference& operator-=(Int4 rhs) { return *this = Int4(*this) - rhs; }
+		constexpr reference& operator*=(Int4 rhs) { return *this = Int4(*this) * rhs; }
 
 	private:
 		unsigned char* m_byte;
@@ -53,7 +53,7 @@ namespace sel::utils {
 	public:
 		constexpr PackedInt4Matrix() = default;
 
-		constexpr PackedInt4Matrix(int4 scalar)
+		constexpr PackedInt4Matrix(Int4 scalar)
 		{
 			for (std::size_t index = 0; index < Rows && index < Columns; ++index)
 			{
@@ -62,24 +62,24 @@ namespace sel::utils {
 		}
 
 		template <class... Values, std::enable_if_t<sizeof...(Values) == Rows * Columns
-			&& (std::is_convertible_v<Values, int4> && ...), int> = 0>
+			&& (std::is_convertible_v<Values, Int4> && ...), int> = 0>
 		constexpr PackedInt4Matrix(Values... values)
 		{
-			const int4 elements[] = { int4(values)... };
+			const Int4 elements[] = { int4(values)... };
 			for (std::size_t index = 0; index < Rows * Columns; ++index)
 			{
 				element(index) = elements[index];
 			}
 		}
 
-		static constexpr Matrix identity() { return Matrix(int4(1)); }
+		static constexpr Matrix identity() { return Matrix(Int4(1)); }
 
 		class Row
 		{
 		public:
 			constexpr Row(PackedInt4Matrix& matrix, std::size_t offset)
 				: m_matrix(matrix), m_offset(offset) {}
-			constexpr int4::reference operator[](std::size_t column) const
+			constexpr Int4::reference operator[](std::size_t column) const
 			{
 				return m_matrix.element(m_offset + column);
 			}
@@ -93,7 +93,7 @@ namespace sel::utils {
 		public:
 			constexpr ConstRow(const PackedInt4Matrix& matrix, std::size_t offset)
 				: m_matrix(matrix), m_offset(offset) {}
-			constexpr int4 operator[](std::size_t column) const
+			constexpr Int4 operator[](std::size_t column) const
 			{
 				return m_matrix.element(m_offset + column);
 			}
@@ -133,14 +133,14 @@ namespace sel::utils {
 	private:
 		friend struct PackedInt4Access;
 
-		constexpr int4::reference element(std::size_t index)
+		constexpr Int4::reference element(std::size_t index)
 		{
-			return int4::reference(m_data[index / 2], static_cast<unsigned int>(index % 2) * 4);
+			return Int4::reference(m_data[index / 2], static_cast<unsigned int>(index % 2) * 4);
 		}
 
-		constexpr int4 element(std::size_t index) const
+		constexpr Int4 element(std::size_t index) const
 		{
-			return int4((m_data[index / 2] >> ((index % 2) * 4)) & 0x0fu);
+			return Int4((m_data[index / 2] >> ((index % 2) * 4)) & 0x0fu);
 		}
 
 		// No padding between rows; an unused final high nibble stays zero.

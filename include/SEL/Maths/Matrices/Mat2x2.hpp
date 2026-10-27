@@ -123,16 +123,16 @@ namespace sel {
 	};
 
 	template <>
-	class Mat2x2<int4> : public utils::PackedInt4Matrix<2, 2, Mat2x2<int4>>
+	class Mat2x2<Int4> : public utils::PackedInt4Matrix<2, 2, Mat2x2<Int4>>
 	{
-		using Base = utils::PackedInt4Matrix<2, 2, Mat2x2<int4>>;
+		using Base = utils::PackedInt4Matrix<2, 2, Mat2x2<Int4>>;
 	public:
 		using Base::Base;
 		constexpr Mat2x2() = default;
 	};
 
 	/// @brief Representation of a packed 2x2 signed four-bit matrix.
-	using Mat2x2i4 = Mat2x2<int4>;
+	using Mat2x2i4 = Mat2x2<Int4>;
 
 	/// @brief Representation of a 2x2 integer matrix.
 	///

@@ -974,16 +974,16 @@ namespace sel {
 	};
 
 	template <>
-	class Mat16x16<int4> : public utils::PackedInt4Matrix<16, 16, Mat16x16<int4>>
+	class Mat16x16<Int4> : public utils::PackedInt4Matrix<16, 16, Mat16x16<Int4>>
 	{
-		using Base = utils::PackedInt4Matrix<16, 16, Mat16x16<int4>>;
+		using Base = utils::PackedInt4Matrix<16, 16, Mat16x16<Int4>>;
 	public:
 		using Base::Base;
 		constexpr Mat16x16() = default;
 	};
 
 	/// @brief Representation of a packed 16x16 signed four-bit matrix.
-	using Mat16x16i4 = Mat16x16<int4>;
+	using Mat16x16i4 = Mat16x16<Int4>;
 
 	/// @brief Representation of a 16x16 integer matrix.
 	///

@@ -145,16 +145,16 @@ namespace sel {
 	};
 
 	template <>
-	class Mat3x4<int4> : public utils::PackedInt4Matrix<3, 4, Mat3x4<int4>>
+	class Mat3x4<Int4> : public utils::PackedInt4Matrix<3, 4, Mat3x4<Int4>>
 	{
-		using Base = utils::PackedInt4Matrix<3, 4, Mat3x4<int4>>;
+		using Base = utils::PackedInt4Matrix<3, 4, Mat3x4<Int4>>;
 	public:
 		using Base::Base;
 		constexpr Mat3x4() = default;
 	};
 
 	/// @brief Representation of a packed 3x4 signed four-bit matrix.
-	using Mat3x4i4 = Mat3x4<int4>;
+	using Mat3x4i4 = Mat3x4<Int4>;
 
 	/// @brief Representation of a 3x4 integer matrix.
 	///

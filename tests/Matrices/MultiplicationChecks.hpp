@@ -20,7 +20,7 @@ namespace matrixTests
     template <class T>
     T fixtureValue(long double value)
     {
-        if constexpr (std::is_same_v<T, sel::int4>)
+        if constexpr (std::is_same_v<T, sel::Int4>)
         {
             return T(static_cast<int>(value));
         }
@@ -120,7 +120,7 @@ namespace matrixTests
         static_assert(std::is_same_v<decltype(left * right), Product>);
         result = left * right;
 
-        if constexpr (std::is_same_v<T, sel::int4> && (Rows * Columns) % 2 != 0)
+        if constexpr (std::is_same_v<T, sel::Int4> && (Rows * Columns) % 2 != 0)
         {
             std::array<unsigned char, sizeof(Product)> bytes{};
             std::memcpy(bytes.data(), &result, sizeof(Product));
@@ -151,7 +151,7 @@ namespace matrixTests
                 }
                 else
                 {
-                    if constexpr (std::is_same_v<T, sel::int4>)
+                    if constexpr (std::is_same_v<T, sel::Int4>)
                     {
                         // Compare decoded values, so an incorrect expectation
                         // cannot be hidden by the constructor's own wrapping.

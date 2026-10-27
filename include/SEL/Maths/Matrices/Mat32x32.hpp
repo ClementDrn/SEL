@@ -3374,16 +3374,16 @@ namespace sel {
 	};
 
 	template <>
-	class Mat32x32<int4> : public utils::PackedInt4Matrix<32, 32, Mat32x32<int4>>
+	class Mat32x32<Int4> : public utils::PackedInt4Matrix<32, 32, Mat32x32<Int4>>
 	{
-		using Base = utils::PackedInt4Matrix<32, 32, Mat32x32<int4>>;
+		using Base = utils::PackedInt4Matrix<32, 32, Mat32x32<Int4>>;
 	public:
 		using Base::Base;
 		constexpr Mat32x32() = default;
 	};
 
 	/// @brief Representation of a packed 32x32 signed four-bit matrix.
-	using Mat32x32i4 = Mat32x32<int4>;
+	using Mat32x32i4 = Mat32x32<Int4>;
 
 	/// @brief Representation of a 32x32 integer matrix.
 	///

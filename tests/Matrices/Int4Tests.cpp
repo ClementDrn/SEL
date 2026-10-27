@@ -3,37 +3,37 @@
 #include <cstdint>
 #include <limits>
 
-static_assert(int(sel::int4(7) + sel::int4(1)) == -8);
-static_assert(int(sel::int4(-8) - sel::int4(1)) == 7);
-static_assert(int(sel::int4(-8) * sel::int4(-8)) == 0);
-static_assert(sel::Mat3x3i4::identity()[2][2] == sel::int4(1));
+static_assert(int(sel::Int4(7) + sel::Int4(1)) == -8);
+static_assert(int(sel::Int4(-8) - sel::Int4(1)) == 7);
+static_assert(int(sel::Int4(-8) * sel::Int4(-8)) == 0);
+static_assert(sel::Mat3x3i4::identity()[2][2] == sel::Int4(1));
 
 TEST_CASE("int4 construction and conversion", "[int4]")
 {
-    CHECK(int(sel::int4()) == 0);
+    CHECK(int(sel::Int4()) == 0);
     for (int value = -512; value <= 512; ++value)
     {
-        CHECK(int(sel::int4(value)) == matrixTests::wrapInt4(value));
-        CHECK(sel::int4(value).value() == matrixTests::wrapInt4(value));
+        CHECK(int(sel::Int4(value)) == matrixTests::wrapInt4(value));
+        CHECK(sel::Int4(value).value() == matrixTests::wrapInt4(value));
     }
-    CHECK(int(sel::int4(std::numeric_limits<int>::min())) == 0);
-    CHECK(int(sel::int4(std::numeric_limits<int>::max())) == -1);
-    CHECK(int(sel::int4(std::numeric_limits<std::int64_t>::min())) == 0);
-    CHECK(int(sel::int4(std::numeric_limits<std::int64_t>::max())) == -1);
-    CHECK(int(sel::int4(std::numeric_limits<std::uint64_t>::max())) == -1);
+    CHECK(int(sel::Int4(std::numeric_limits<int>::min())) == 0);
+    CHECK(int(sel::Int4(std::numeric_limits<int>::max())) == -1);
+    CHECK(int(sel::Int4(std::numeric_limits<std::int64_t>::min())) == 0);
+    CHECK(int(sel::Int4(std::numeric_limits<std::int64_t>::max())) == -1);
+    CHECK(int(sel::Int4(std::numeric_limits<std::uint64_t>::max())) == -1);
 }
 
 TEST_CASE("int4 exhaustive arithmetic and comparisons", "[int4]")
 {
     for (int left = -8; left <= 7; ++left)
     {
-        const sel::int4 a(left);
+        const sel::Int4 a(left);
         CHECK(int(+a) == left);
         CHECK(int(-a) == matrixTests::wrapInt4(-left));
         for (int right = -8; right <= 7; ++right)
         {
             CAPTURE(left, right);
-            const sel::int4 b(right);
+            const sel::Int4 b(right);
             CHECK(int(a + b) == matrixTests::wrapInt4(left + right));
             CHECK(int(a - b) == matrixTests::wrapInt4(left - right));
             CHECK(int(a * b) == matrixTests::wrapInt4(left * right));

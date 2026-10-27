@@ -54,7 +54,7 @@ namespace sel::utils {
 				{
 					value += int(a[row][inner]) * int(b[inner][column]);
 				}
-				dst[row][column] = int4(value);
+				dst[row][column] = Int4(value);
 			}
 		}
 	}
@@ -116,7 +116,7 @@ namespace sel {
 	{
 		Mat4x4<T> result;
 
-		if constexpr (std::is_same_v<T, int4>)
+		if constexpr (std::is_same_v<T, Int4>)
 		{
 			utils::mulMatrixInt4<4, 4, 4>(result, lhs, rhs);
 			return result;
@@ -183,7 +183,7 @@ namespace sel {
 	{
 		Mat4x4<T> result;
 
-		if constexpr (std::is_same_v<T, int4>)
+		if constexpr (std::is_same_v<T, Int4>)
 		{
 			utils::mulMatrixInt4<4, 3, 4>(result, lhs, rhs);
 			return result;
@@ -250,7 +250,7 @@ namespace sel {
 	{
 		Mat4x4<T> result;
 
-		if constexpr (std::is_same_v<T, int4>)
+		if constexpr (std::is_same_v<T, Int4>)
 		{
 			utils::mulMatrixInt4<4, 2, 4>(result, lhs, rhs);
 			return result;
@@ -320,7 +320,7 @@ namespace sel {
 	{
 		Mat4x3<T> result;
 
-		if constexpr (std::is_same_v<T, int4>)
+		if constexpr (std::is_same_v<T, Int4>)
 		{
 			utils::mulMatrixInt4<4, 4, 3>(result, lhs, rhs);
 			return result;
@@ -383,7 +383,7 @@ namespace sel {
 	{
 		Mat4x3<T> result;
 
-		if constexpr (std::is_same_v<T, int4>)
+		if constexpr (std::is_same_v<T, Int4>)
 		{
 			utils::mulMatrixInt4<4, 3, 3>(result, lhs, rhs);
 			return result;
@@ -446,7 +446,7 @@ namespace sel {
 	{
 		Mat4x3<T> result;
 
-		if constexpr (std::is_same_v<T, int4>)
+		if constexpr (std::is_same_v<T, Int4>)
 		{
 			utils::mulMatrixInt4<4, 2, 3>(result, lhs, rhs);
 			return result;
@@ -512,7 +512,7 @@ namespace sel {
 	{
 		Mat4x2<T> result;
 
-		if constexpr (std::is_same_v<T, int4>)
+		if constexpr (std::is_same_v<T, Int4>)
 		{
 			utils::mulMatrixInt4<4, 4, 2>(result, lhs, rhs);
 			return result;
@@ -571,7 +571,7 @@ namespace sel {
 	{
 		Mat4x2<T> result;
 
-		if constexpr (std::is_same_v<T, int4>)
+		if constexpr (std::is_same_v<T, Int4>)
 		{
 			utils::mulMatrixInt4<4, 3, 2>(result, lhs, rhs);
 			return result;
@@ -630,7 +630,7 @@ namespace sel {
 	{
 		Mat4x2<T> result;
 
-		if constexpr (std::is_same_v<T, int4>)
+		if constexpr (std::is_same_v<T, Int4>)
 		{
 			utils::mulMatrixInt4<4, 2, 2>(result, lhs, rhs);
 			return result;
@@ -692,7 +692,7 @@ namespace sel {
 	{
 		Mat3x4<T> result;
 
-		if constexpr (std::is_same_v<T, int4>)
+		if constexpr (std::is_same_v<T, Int4>)
 		{
 			utils::mulMatrixInt4<3, 4, 4>(result, lhs, rhs);
 			return result;
@@ -753,7 +753,7 @@ namespace sel {
 	{
 		Mat3x4<T> result;
 
-		if constexpr (std::is_same_v<T, int4>)
+		if constexpr (std::is_same_v<T, Int4>)
 		{
 			utils::mulMatrixInt4<3, 3, 4>(result, lhs, rhs);
 			return result;
@@ -814,7 +814,7 @@ namespace sel {
 	{
 		Mat3x4<T> result;
 
-		if constexpr (std::is_same_v<T, int4>)
+		if constexpr (std::is_same_v<T, Int4>)
 		{
 			utils::mulMatrixInt4<3, 2, 4>(result, lhs, rhs);
 			return result;
@@ -878,7 +878,7 @@ namespace sel {
 	{
 		Mat3x3<T> result;
 
-		if constexpr (std::is_same_v<T, int4>)
+		if constexpr (std::is_same_v<T, Int4>)
 		{
 			utils::mulMatrixInt4<3, 4, 3>(result, lhs, rhs);
 			return result;
@@ -936,7 +936,7 @@ namespace sel {
 	{
 		Mat3x3<T> result;
 
-		if constexpr (std::is_same_v<T, int4>)
+		if constexpr (std::is_same_v<T, Int4>)
 		{
 			utils::mulMatrixInt4<3, 3, 3>(result, lhs, rhs);
 			return result;
@@ -994,7 +994,7 @@ namespace sel {
 	{
 		Mat3x3<T> result;
 
-		if constexpr (std::is_same_v<T, int4>)
+		if constexpr (std::is_same_v<T, Int4>)
 		{
 			utils::mulMatrixInt4<3, 2, 3>(result, lhs, rhs);
 			return result;
@@ -1055,7 +1055,7 @@ namespace sel {
 	{
 		Mat3x2<T> result;
 
-		if constexpr (std::is_same_v<T, int4>)
+		if constexpr (std::is_same_v<T, Int4>)
 		{
 			utils::mulMatrixInt4<3, 4, 2>(result, lhs, rhs);
 			return result;
@@ -1110,7 +1110,7 @@ namespace sel {
 	{
 		Mat3x2<T> result;
 
-		if constexpr (std::is_same_v<T, int4>)
+		if constexpr (std::is_same_v<T, Int4>)
 		{
 			utils::mulMatrixInt4<3, 3, 2>(result, lhs, rhs);
 			return result;
@@ -1165,7 +1165,7 @@ namespace sel {
 	{
 		Mat3x2<T> result;
 
-		if constexpr (std::is_same_v<T, int4>)
+		if constexpr (std::is_same_v<T, Int4>)
 		{
 			utils::mulMatrixInt4<3, 2, 2>(result, lhs, rhs);
 			return result;
@@ -1223,7 +1223,7 @@ namespace sel {
 	{
 		Mat2x4<T> result;
 
-		if constexpr (std::is_same_v<T, int4>)
+		if constexpr (std::is_same_v<T, Int4>)
 		{
 			utils::mulMatrixInt4<2, 4, 4>(result, lhs, rhs);
 			return result;
@@ -1278,7 +1278,7 @@ namespace sel {
 	{
 		Mat2x4<T> result;
 
-		if constexpr (std::is_same_v<T, int4>)
+		if constexpr (std::is_same_v<T, Int4>)
 		{
 			utils::mulMatrixInt4<2, 3, 4>(result, lhs, rhs);
 			return result;
@@ -1333,7 +1333,7 @@ namespace sel {
 	{
 		Mat2x4<T> result;
 
-		if constexpr (std::is_same_v<T, int4>)
+		if constexpr (std::is_same_v<T, Int4>)
 		{
 			utils::mulMatrixInt4<2, 2, 4>(result, lhs, rhs);
 			return result;
@@ -1391,7 +1391,7 @@ namespace sel {
 	{
 		Mat2x3<T> result;
 
-		if constexpr (std::is_same_v<T, int4>)
+		if constexpr (std::is_same_v<T, Int4>)
 		{
 			utils::mulMatrixInt4<2, 4, 3>(result, lhs, rhs);
 			return result;
@@ -1444,7 +1444,7 @@ namespace sel {
 	{
 		Mat2x3<T> result;
 
-		if constexpr (std::is_same_v<T, int4>)
+		if constexpr (std::is_same_v<T, Int4>)
 		{
 			utils::mulMatrixInt4<2, 3, 3>(result, lhs, rhs);
 			return result;
@@ -1497,7 +1497,7 @@ namespace sel {
 	{
 		Mat2x3<T> result;
 
-		if constexpr (std::is_same_v<T, int4>)
+		if constexpr (std::is_same_v<T, Int4>)
 		{
 			utils::mulMatrixInt4<2, 2, 3>(result, lhs, rhs);
 			return result;
@@ -1553,7 +1553,7 @@ namespace sel {
 	{
 		Mat2x2<T> result;
 
-		if constexpr (std::is_same_v<T, int4>)
+		if constexpr (std::is_same_v<T, Int4>)
 		{
 			utils::mulMatrixInt4<2, 4, 2>(result, lhs, rhs);
 			return result;
@@ -1604,7 +1604,7 @@ namespace sel {
 	{
 		Mat2x2<T> result;
 
-		if constexpr (std::is_same_v<T, int4>)
+		if constexpr (std::is_same_v<T, Int4>)
 		{
 			utils::mulMatrixInt4<2, 3, 2>(result, lhs, rhs);
 			return result;
@@ -1655,7 +1655,7 @@ namespace sel {
 	{
 		Mat2x2<T> result;
 
-		if constexpr (std::is_same_v<T, int4>)
+		if constexpr (std::is_same_v<T, Int4>)
 		{
 			utils::mulMatrixInt4<2, 2, 2>(result, lhs, rhs);
 			return result;
@@ -1709,7 +1709,7 @@ namespace sel {
 	{
 		Mat8x8<T> result;
 
-		if constexpr (std::is_same_v<T, int4>)
+		if constexpr (std::is_same_v<T, Int4>)
 		{
 			utils::mulMatrixInt4<8, 8, 8>(result, lhs, rhs);
 			return result;
@@ -1763,7 +1763,7 @@ namespace sel {
 	{
 		Mat16x16<T> result;
 
-		if constexpr (std::is_same_v<T, int4>)
+		if constexpr (std::is_same_v<T, Int4>)
 		{
 			utils::mulMatrixInt4<16, 16, 16>(result, lhs, rhs);
 			return result;
@@ -1817,7 +1817,7 @@ namespace sel {
 	{
 		Mat32x32<T> result;
 
-		if constexpr (std::is_same_v<T, int4>)
+		if constexpr (std::is_same_v<T, Int4>)
 		{
 			utils::mulMatrixInt4<32, 32, 32>(result, lhs, rhs);
 			return result;
