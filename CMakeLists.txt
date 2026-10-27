@@ -15,3 +15,8 @@ if(PROJECT_IS_TOP_LEVEL)
         add_subdirectory(tests)
     endif()
 endif()
+
+option(SEL_BUILD_BENCHMARKS "Build scalar/SIMD matrix multiplication benchmarks" OFF)
+if(SEL_BUILD_BENCHMARKS)
+    add_subdirectory(benchmarks)
+endif()

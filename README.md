@@ -46,6 +46,16 @@ ctest --test-dir build -C Debug --output-on-failure
 ```
 
 
+## Matrix benchmarks
+
+Compare explicit SIMD on/off in Release mode (x86 with SSE4.1). Compiler
+auto-vectorization stays enabled in both builds.
+```shell
+cmake -S . -B build/benchmarks -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DSEL_BUILD_BENCHMARKS=ON
+cmake --build build/benchmarks --target sel_bench_compare --config Release --parallel 2
+```
+
+
 ## License
 
 This library is licensed under the [MIT](./LICENSE) license.
